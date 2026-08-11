@@ -109,6 +109,19 @@
   .muted{font-size:11px;color:var(--sub);line-height:1.5;}
   .pill{font-size:11px;padding:2px 8px;border-radius:20px;background:#EAF0FF;color:var(--blue);font-weight:600;}
   .method{font-size:11px;color:var(--sub);line-height:1.5;background:#EEF1F7;border-radius:8px;padding:8px 10px;}
+  .pe-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:600;}
+  .pe-head .add{font-size:12px;color:var(--blue);cursor:pointer;font-weight:600;padding:2px 8px;border-radius:6px;}
+  .pe-head .add:hover{background:#EAF0FF;}
+  .perow{display:flex;flex-direction:column;gap:6px;padding:10px;border:1px solid var(--line);border-radius:9px;background:#fff;}
+  .perow .pe-top{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--sub);font-weight:600;}
+  .perow .pe-del{color:var(--sub);cursor:pointer;font-size:15px;}
+  .perow .pe-del:hover{color:var(--red);}
+  .pe-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+  .pe-grid .fld{display:flex;flex-direction:column;gap:3px;}
+  .pe-grid .fld span{font-size:10px;color:var(--sub);text-align:center;}
+  .pe-grid select,.pe-grid input{width:100%;padding:6px 4px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;color:var(--ink);min-width:0;}
+  .pe-type-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
+  .pe-type-row select{flex:1;}
 </style>
 </head>
 <body>
@@ -141,7 +154,7 @@
       <div class="card">
         <h3>货物清单 <span class="add" id="addCargo">+ 添加</span></h3>
         <div class="cargolist" id="cargoList"></div>
-        <div class="muted">列出所有要装柜的货物（长方体 / 圆柱体），可在 3D 视图中拖动单件摆放；点「生成最优装柜计划」由算法自动求最优排布。</div>
+        <div class="muted">列出所有要装柜的货物（长方体 / 圆柱体 / 组合件），可在 3D 视图中拖动单件摆放；点「生成最优装柜计划」由算法自动求最优排布。组合件可由多个基本形状拼合而成，整体按外接长方体（包络）参与排布与校验。</div>
       </div>
 
       <div class="card" id="inspector">
@@ -149,11 +162,17 @@
         <div class="chips">
           <div class="chip on" data-shape="box" id="chipBox">长方体</div>
           <div class="chip" data-shape="cyl" id="chipCyl">圆柱体</div>
+          <div class="chip" data-shape="composite" id="chipComposite">组合件</div>
         </div>
         <div class="dim3">
           <div class="fld"><input class="inp" id="inL" type="number" value="1.2" step="0.1" min="0.1"><span>长 L (m)</span></div>
           <div class="fld"><input class="inp" id="inW" type="number" value="1.0" step="0.1" min="0.1"><span>宽 W (m)</span></div>
           <div class="fld"><input class="inp" id="inH" type="number" value="1.0" step="0.1" min="0.1"><span>高 H (m)</span></div>
+        </div>
+        <div id="partsEditor" style="display:none;flex-direction:column;gap:10px;">
+          <div class="pe-head">组合件构成 <span class="add" id="peAdd">+ 子形状</span></div>
+          <div id="peList" style="display:flex;flex-direction:column;gap:10px;"></div>
+          <div class="muted">每个子形状设尺寸与在组合体内部的局部偏移（贴地角相对组合体原点，单位 m）。组合体整体按各子形状外接长方体（包络）参与装柜与堆叠校验。</div>
         </div>
         <div class="row">
           <label>数量</label>
@@ -207,6 +226,7 @@
         <div class="legend">
           <div class="li"><span class="ld" style="background:#F7B733"></span>长方体</div>
           <div class="li"><span class="ld" style="background:#34D0BC"></span>圆柱体</div>
+          <div class="li"><span class="ld" style="background:repeating-linear-gradient(45deg,#9B8CFF,#9B8CFF 3px,transparent 3px,transparent 6px)"></span>组合件</div>
           <div class="li"><span class="ld" style="background:#5BE0FF"></span>已选中</div>
           <div class="li"><span class="ld" style="border:2px dashed #FFC45C;background:transparent"></span>堆叠接缝</div>
         </div>
@@ -278,7 +298,7 @@ let planned = false;
 
 function addGroup(shape, L, W, H, stack){
   const g = { id:'g'+(uid++), name:'货物 #'+(groups.length+1), shape:shape||'box',
-    oL:L||1.2, oW:W||1.0, oH:H||1.0, stack:stack!==false, color:PALETTE[groups.length % PALETTE.length] };
+    oL:L||1.2, oW:W||1.0, oH:H||1.0, stack:stack!==false, color:PALETTE[groups.length % PALETTE.length], parts:null };
   groups.push(g);
   addInstance(g);
   return g;
@@ -286,14 +306,33 @@ function addGroup(shape, L, W, H, stack){
 function addInstance(g){
   const it = { id:uid++, groupId:g.id, shape:g.shape,
     oL:g.oL, oW:g.oW, oH:g.oH, L:g.oL, W:g.oW, H:g.oH,
-    x:0.3, y:0, z:0.3, stack:g.stack, color:g.color, overflow:false };
+    x:0.3, y:0, z:0.3, stack:g.stack, color:g.color, overflow:false,
+    parts: (g.shape==='composite' && g.parts)? cloneParts(g.parts): null };
   items.push(it);
   return it;
+}
+// 组合件（异形）辅助：多个基本形状按局部偏移拼合，整体按外接长方体（包络）参与装柜
+function cloneParts(parts){ return parts.map(p=>({type:p.type, L:p.L, W:p.W, H:p.H, dx:p.dx, dy:p.dy, dz:p.dz})); }
+function envOf(parts){
+  let L=0,W=0,H=0;
+  parts.forEach(p=>{ L=Math.max(L,p.dx+p.L); W=Math.max(W,p.dz+p.W); H=Math.max(H,p.dy+p.H); });
+  return {L,W,H};
+}
+function syncComposite(g){
+  if(g.shape!=='composite' || !g.parts) return;
+  const e=envOf(g.parts); g.oL=e.L; g.oW=e.W; g.oH=e.H;
 }
 // seed example
 addGroup('box',1.2,1.0,1.0,true);
 addGroup('cyl',1.0,1.0,1.4,false);
-addGroup('box',0.9,0.9,0.8,true);
+// 组合件示例：底座 + 上方偏移小箱体（类似 L/T 形异形货）
+const _cgrp = addGroup('composite',1.3,1.1,1.2,true);
+_cgrp.parts = [
+  {type:'box', L:1.3, W:1.1, H:0.6, dx:0, dy:0, dz:0},
+  {type:'box', L:0.6, W:0.6, H:0.6, dx:0.35, dy:0.6, dz:0.25}
+];
+syncComposite(_cgrp);
+applyGroupDims(_cgrp);
 selId = items[0].id;
 
 // ---------- projection ----------
@@ -357,7 +396,9 @@ function boxFaces(it){
   return f.sort((a,b)=>a.avg-b.avg);
 }
 function layerFactor(y){ const c=CONTAINERS[curSpec]; return 1 + (y/c.H)*0.16; } // 越高越亮，堆叠成阶梯
-function drawBox(it){
+function drawBoxPrim(o, it){
+  const s={x:it.x,y:it.y,z:it.z,L:it.L,W:it.W,H:it.H};
+  it.x=o.x; it.y=o.y; it.z=o.z; it.L=o.L; it.W=o.W; it.H=o.H;
   const faces=boxFaces(it);
   const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
   const lf=layerFactor(it.y);
@@ -369,6 +410,9 @@ function drawBox(it){
     ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,face.d*lf); ctx.fill(); ctx.globalAlpha=1;
     ctx.strokeStyle='rgba(13,27,52,.38)'; ctx.lineWidth=1.1; ctx.stroke();
   });
+  it.x=s.x; it.y=s.y; it.z=s.z; it.L=s.L; it.W=s.W; it.H=s.H;
+}
+function drawBoxDecor(it){
   // 堆叠接触处的橙色虚线接缝，清晰标示上下层交汇
   if(it.y>1e-6){
     const sh=[[it.x,it.y,it.z],[it.x+it.L,it.y,it.z],[it.x+it.L,it.y,it.z+it.W],[it.x,it.y,it.z+it.W]].map(p=>project(p[0],p[1],p[2]));
@@ -376,13 +420,15 @@ function drawBox(it){
     ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,196,92,.95)'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
   }
   if(it.id===selId){
-    const top=faces.find(f=>f.n==='top');
-    ctx.beginPath();
-    top.i.forEach((idx,k)=>{ const p=top.poly[idx]; k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
-    ctx.closePath(); ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]);
+    const top=[[it.x,it.y+it.H,it.z],[it.x+it.L,it.y+it.H,it.z],[it.x+it.L,it.y+it.H,it.z+it.W],[it.x,it.y+it.H,it.z+it.W]].map(p=>project(p[0],p[1],p[2]));
+    ctx.beginPath(); top.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
+    ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]);
   }
 }
-function drawCyl(it){
+function drawBox(it){ drawBoxPrim(it, it); drawBoxDecor(it); }
+function drawCylPrim(o, it){
+  const s={x:it.x,y:it.y,z:it.z,L:it.L,W:it.W,H:it.H};
+  it.x=o.x; it.y=o.y; it.z=o.z; it.L=o.L; it.W=o.W; it.H=o.H;
   const {x,y,z,L,W,H}=it;
   const cx=x+L/2, cz=z+W/2, r=Math.min(L,W)/2;
   const k=K*scale*zoom, m=M*scale*zoom;
@@ -398,12 +444,46 @@ function drawCyl(it){
   ctx.closePath(); ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,0.82*lf); ctx.fill(); ctx.globalAlpha=1;
   ctx.beginPath(); ctx.ellipse(t[0],t[1],ax,ay,0,0,Math.PI*2); ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,1.0*lf); ctx.fill(); ctx.globalAlpha=1;
   ctx.strokeStyle='rgba(13,27,52,.38)'; ctx.lineWidth=1.1; ctx.stroke();
-  // 堆叠接触处的橙色虚线接缝
+  it.x=s.x; it.y=s.y; it.z=s.z; it.L=s.L; it.W=s.W; it.H=s.H;
+}
+function drawCylDecor(it){
+  const {x,y,z,L,W,H}=it;
+  const cx=x+L/2, cz=z+W/2, r=Math.min(L,W)/2;
+  const k=K*scale*zoom, m=M*scale*zoom;
+  const ax=Math.SQRT2*r*k, ay=Math.SQRT2*r*m;
+  const b=project(cx,y,cz), t=project(cx,y+H,cz);
   if(y>1e-6){
     ctx.beginPath(); ctx.ellipse(b[0],b[1],ax,ay,0,0,Math.PI*2);
     ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,196,92,.95)'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
   }
   if(it.id===selId){ ctx.beginPath(); ctx.ellipse(t[0],t[1],ax,ay,0,0,Math.PI*2); ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]); }
+}
+function drawCyl(it){ drawCylPrim(it, it); drawCylDecor(it); }
+// 组合件（异形）：各子形状按局部偏移拼合绘制；整体按外接长方体（包络）参与装柜
+function drawComposite(it){
+  const parts=it.parts||[];
+  parts.forEach(p=>{
+    const o={x:it.x+p.dx, y:it.y+p.dy, z:it.z+p.dz, L:p.L, W:p.W, H:p.H};
+    if(p.type==='cyl') drawCylPrim(o, it); else drawBoxPrim(o, it);
+  });
+  const {x,y,z,L,W,H}=it;
+  // 组合体包络的堆叠接缝（橙色虚线）
+  if(it.y>1e-6){
+    const sh=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W]].map(p=>project(p[0],p[1],p[2]));
+    ctx.beginPath(); sh.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
+    ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,196,92,.95)'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
+  }
+  // 包络虚线轮廓（紫色）标示组合整体
+  const env=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W],[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]].map(p=>project(p[0],p[1],p[2]));
+  const ef=[[4,5,6,7],[0,1,5,4],[1,2,6,5],[3,2,6,7],[0,3,7,4],[0,1,2,3]];
+  ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(155,140,255,.9)'; ctx.lineWidth=1.4;
+  ef.forEach(idxs=>{ ctx.beginPath(); idxs.forEach((idx,k)=>{ const p=env[idx]; k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }); ctx.closePath(); ctx.stroke(); });
+  ctx.setLineDash([]);
+  if(it.id===selId){
+    const top=[[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]].map(p=>project(p[0],p[1],p[2]));
+    ctx.beginPath(); top.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
+    ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]);
+  }
 }
 function drawContainer(){
   const c=CONTAINERS[curSpec];
@@ -474,6 +554,35 @@ function orthoFit(cvEl, wWorld, hWorld){
   const ox=W/2-(wWorld/2)*s, oy=H/2-(hWorld/2)*s;
   return {s,ox,oy};
 }
+function hatchClip(g, x,y,w,h){
+  g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip();
+  g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1;
+  for(let d=-h; d<w; d+=7){ g.beginPath(); g.moveTo(x+d,y+h); g.lineTo(x+d+h,y); g.stroke(); }
+  g.restore();
+}
+function orthoItem(g, x0,y0,w,h, it, view, fs){
+  const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
+  const parts= it.parts;
+  if(parts && parts.length){
+    parts.forEach(p=>{
+      let px,py,pw,ph;
+      if(view==='top'){ px=x0+p.dx*fs; py=y0+p.dz*fs; pw=p.L*fs; ph=p.W*fs; }
+      else if(view==='front'){ px=x0+p.dx*fs; py=y0+(it.H-(p.dy+p.H))*fs; pw=p.L*fs; ph=p.H*fs; }
+      else { px=x0+p.dz*fs; py=y0+(it.H-(p.dy+p.H))*fs; pw=p.W*fs; ph=p.H*fs; }
+      g.globalAlpha= it.overflow?0.45:(it.id===selId?1:0.82); g.fillStyle=col; g.fillRect(px,py,pw,ph); g.globalAlpha=1;
+      if(p.type==='cyl') hatchClip(g,px,py,pw,ph);
+      g.strokeStyle='rgba(13,27,52,.32)'; g.lineWidth=0.8; g.strokeRect(px,py,pw,ph);
+    });
+  } else {
+    g.globalAlpha= it.overflow?0.45:(it.id===selId?1:0.82); g.fillStyle=col; g.fillRect(x0,y0,w,h); g.globalAlpha=1;
+    if(it.shape==='cyl') hatchClip(g,x0,y0,w,h);
+  }
+  g.strokeStyle= it.id===selId?'#5BE0FF':(it.overflow?'#E5484D':'rgba(13,27,52,.45)'); g.lineWidth=it.id===selId?1.8:1;
+  g.strokeRect(x0,y0,w,h);
+  if(parts && parts.length){
+    g.setLineDash([4,3]); g.strokeStyle='rgba(155,140,255,.85)'; g.lineWidth=1; g.strokeRect(x0,y0,w,h); g.setLineDash([]);
+  }
+}
 function drawTop(){
   const cvEl=document.getElementById('cvTop'), ctx=ctxT, c=CONTAINERS[curSpec];
   ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0); ctx.clearRect(0,0,cvEl.width,cvEl.height);
@@ -482,13 +591,7 @@ function drawTop(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('L '+c.L.toFixed(2)+'m', X(c.L/2), Y(c.W)+16);
   ctx.save(); ctx.translate(X(0)-12, Y(c.W/2)); ctx.rotate(-Math.PI/2); ctx.fillText('W '+c.W.toFixed(2)+'m',0,0); ctx.restore();
-  [...items].sort((a,b)=>a.y-b.y).forEach(it=>{
-    const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
-    ctx.globalAlpha=it.overflow?0.45:(it.id===selId?1:0.8); ctx.fillStyle=col;
-    ctx.fillRect(X(it.x),Y(it.z),it.L*f.s,it.W*f.s); ctx.globalAlpha=1;
-    ctx.strokeStyle= it.id===selId?'#5BE0FF':(it.overflow?'#E5484D':'rgba(13,27,52,.45)'); ctx.lineWidth=it.id===selId?1.8:1;
-    ctx.strokeRect(X(it.x),Y(it.z),it.L*f.s,it.W*f.s);
-  });
+  [...items].sort((a,b)=>a.y-b.y).forEach(it=>{ orthoItem(ctxT, X(it.x),Y(it.z),it.L*f.s,it.W*f.s, it, 'top', f.s); });
 }
 function drawFront(){
   const cvEl=document.getElementById('cvFront'), ctx=ctxF, c=CONTAINERS[curSpec];
@@ -498,13 +601,7 @@ function drawFront(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('L '+c.L.toFixed(2)+'m', X(c.L/2), Yu(0)+16);
   ctx.save(); ctx.translate(X(0)-12, Yu(c.H/2)); ctx.rotate(-Math.PI/2); ctx.fillText('H '+c.H.toFixed(2)+'m',0,0); ctx.restore();
-  [...items].sort((a,b)=>a.z-b.z).forEach(it=>{
-    const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
-    ctx.globalAlpha=it.overflow?0.45:(it.id===selId?1:0.82); ctx.fillStyle=col;
-    ctx.fillRect(X(it.x),Yu(it.y+it.H),it.L*f.s,it.H*f.s); ctx.globalAlpha=1;
-    ctx.strokeStyle= it.id===selId?'#5BE0FF':(it.overflow?'#E5484D':'rgba(13,27,52,.45)'); ctx.lineWidth=it.id===selId?1.8:1;
-    ctx.strokeRect(X(it.x),Yu(it.y+it.H),it.L*f.s,it.H*f.s);
-  });
+  [...items].sort((a,b)=>a.z-b.z).forEach(it=>{ orthoItem(ctxF, X(it.x),Yu(it.y+it.H),it.L*f.s,it.H*f.s, it, 'front', f.s); });
 }
 function drawRight(){
   const cvEl=document.getElementById('cvRight'), ctx=ctxR, c=CONTAINERS[curSpec];
@@ -514,13 +611,7 @@ function drawRight(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('W '+c.W.toFixed(2)+'m', X(c.W/2), Yu(0)+16);
   ctx.save(); ctx.translate(X(0)-12, Yu(c.H/2)); ctx.rotate(-Math.PI/2); ctx.fillText('H '+c.H.toFixed(2)+'m',0,0); ctx.restore();
-  [...items].sort((a,b)=>a.x-b.x).forEach(it=>{
-    const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
-    ctx.globalAlpha=it.overflow?0.45:(it.id===selId?1:0.82); ctx.fillStyle=col;
-    ctx.fillRect(X(it.z),Yu(it.y+it.H),it.W*f.s,it.H*f.s); ctx.globalAlpha=1;
-    ctx.strokeStyle= it.id===selId?'#5BE0FF':(it.overflow?'#E5484D':'rgba(13,27,52,.45)'); ctx.lineWidth=it.id===selId?1.8:1;
-    ctx.strokeRect(X(it.z),Yu(it.y+it.H),it.W*f.s,it.H*f.s);
-  });
+  [...items].sort((a,b)=>a.x-b.x).forEach(it=>{ orthoItem(ctxR, X(it.z),Yu(it.y+it.H),it.W*f.s,it.H*f.s, it, 'right', f.s); });
 }
 function render(){
   resize(); fitView();
@@ -531,7 +622,11 @@ function render(){
     const pa=project(a.x+a.L/2,a.y,a.z+a.W/2), pb=project(b.x+b.L/2,b.y,b.z+b.W/2);
     return (pa[0]+pa[1])-(pb[0]+pb[1]);
   });
-  sorted.forEach(it=> it.shape==='cyl'? drawCyl(it): drawBox(it));
+  sorted.forEach(it=>{
+    if(it.shape==='composite') drawComposite(it);
+    else if(it.shape==='cyl') drawCyl(it);
+    else drawBox(it);
+  });
   drawTop(); drawFront(); drawRight();
   updatePanels();
 }
@@ -543,6 +638,35 @@ function getGroup(id){ return groups.find(g=>g.id===id); }
 function getSel(){ return items.find(i=>i.id===selId); }
 function selGroup(){ const it=getSel(); return it? getGroup(it.groupId): null; }
 function setVal(id, val){ const el=document.getElementById(id); if(el && document.activeElement!==el) el.value=val; }
+let peBuiltFor=null;
+function ensurePartsEditor(g){
+  const pe=document.getElementById('partsEditor');
+  if(g && g.shape==='composite'){ pe.style.display='flex'; if(peBuiltFor!==g.id){ rebuildPartsEditor(g); peBuiltFor=g.id; } }
+  else { pe.style.display='none'; peBuiltFor=null; }
+}
+function rebuildPartsEditor(g){
+  const list=document.getElementById('peList'); list.innerHTML='';
+  g.parts.forEach((p,i)=>{
+    const row=document.createElement('div'); row.className='perow';
+    const typeOpts = p.type==='cyl'
+      ? '<option value="box">长方体</option><option value="cyl" selected>圆柱</option>'
+      : '<option value="box" selected>长方体</option><option value="cyl">圆柱</option>';
+    row.innerHTML=`<div class="pe-top"><span>子形状 ${i+1}</span><span class="pe-del" data-i="${i}">×</span></div>
+      <div class="pe-type-row"><select class="pe-type" data-i="${i}">${typeOpts}</select></div>
+      <div class="pe-grid">
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.L.toFixed(2)}" data-i="${i}" data-f="L"><span>长 L</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.W.toFixed(2)}" data-i="${i}" data-f="W"><span>宽 W</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.H.toFixed(2)}" data-i="${i}" data-f="H"><span>高 H</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dx.toFixed(2)}" data-i="${i}" data-f="dx"><span>偏 X</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dy.toFixed(2)}" data-i="${i}" data-f="dy"><span>偏 Y</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dz.toFixed(2)}" data-i="${i}" data-f="dz"><span>偏 Z</span></div>
+      </div>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('.pe-del').forEach(btn=>btn.onclick=()=>{ const i=+btn.dataset.i; if(g.parts.length<=1) return; g.parts.splice(i,1); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); });
+  list.querySelectorAll('.pe-type').forEach(sel=>sel.onchange=()=>{ const i=+sel.dataset.i; g.parts[i].type=sel.value; applyGroupDims(g); render(); });
+  list.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{ const i=+inp.dataset.i, f=inp.dataset.f; const v=parseFloat(inp.value); if(isNaN(v)) return; g.parts[i][f]= f.startsWith('d')? Math.max(0,v) : Math.max(0.1,v); syncComposite(g); applyGroupDims(g); render(); });
+}
 function updatePanels(){
   const c=CONTAINERS[curSpec];
   document.getElementById('specInfo').textContent='内部容积 '+c.vol.toFixed(1)+' m³';
@@ -552,8 +676,9 @@ function updatePanels(){
     const n=countOf(g.id);
     const div=document.createElement('div'); div.className='citem'+(getSel()&&getSel().groupId===g.id?' sel':'');
     const dim = g.shape==='cyl'? (Math.min(g.oL,g.oW).toFixed(1)+'×'+g.oH.toFixed(1)+' m') : (g.oL.toFixed(1)+'×'+g.oW.toFixed(1)+'×'+g.oH.toFixed(1)+' m');
+    const shapeName = g.shape==='cyl'?'圆柱体':(g.shape==='composite'?'组合件':'长方体');
     div.innerHTML=`<span class="cdot" style="background:${g.color}"></span>
-      <div class="cinfo"><div class="nm">${g.name} · ${g.shape==='cyl'?'圆柱体':'长方体'} ×${n}</div>
+      <div class="cinfo"><div class="nm">${g.name} · ${shapeName} ×${n}</div>
       <div class="dm">${dim} ${g.stack?'(可叠)':''}</div></div>
       <span class="cdel" data-del="${g.id}">×</span>`;
     div.onclick=(e)=>{ if(e.target.dataset.del){ removeGroup(e.target.dataset.del); return;} const first=items.find(i=>i.groupId===g.id); if(first) select(first.id); };
@@ -566,7 +691,12 @@ function updatePanels(){
   if(g){
     document.getElementById('chipBox').classList.toggle('on',g.shape==='box');
     document.getElementById('chipCyl').classList.toggle('on',g.shape==='cyl');
-    setVal('inL',g.oL); setVal('inW',g.oW); setVal('inH',g.oH);
+    document.getElementById('chipComposite').classList.toggle('on',g.shape==='composite');
+    const isComp = g.shape==='composite';
+    ['inL','inW','inH'].forEach(id=>{ const el=document.getElementById(id); el.disabled=isComp; el.style.opacity=isComp?0.5:1; });
+    if(isComp){ setVal('inL',(+g.oL).toFixed(2)); setVal('inW',(+g.oW).toFixed(2)); setVal('inH',(+g.oH).toFixed(2)); }
+    else { setVal('inL',g.oL); setVal('inW',g.oW); setVal('inH',g.oH); }
+    ensurePartsEditor(g);
     setVal('qtyVal',countOf(g.id));
     setVal('inX',(+it.x).toFixed(1)); setVal('inY',(+it.y).toFixed(1)); setVal('inZ',(+it.z).toFixed(1));
     document.getElementById('stackSw').classList.toggle('on',g.stack);
@@ -665,13 +795,14 @@ window.addEventListener('mouseup',()=>{ drag=null; });
 // ---------- controls ----------
 document.getElementById('specSel').addEventListener('change',e=>{ curSpec=e.target.value; zoom=1; render(); });
 document.getElementById('addCargo').onclick=()=>{ const g=addGroup('box',1.2,1.0,1.0,true); selId=items[items.length-1].id; render(); };
-document.getElementById('chipBox').onclick=()=>{ const g=selGroup(); if(g){g.shape='box'; applyGroupDims(g); render();} };
-document.getElementById('chipCyl').onclick=()=>{ const g=selGroup(); if(g){g.shape='cyl'; applyGroupDims(g); render();} };
+document.getElementById('chipBox').onclick=()=>{ const g=selGroup(); if(g){g.shape='box'; g.parts=null; applyGroupDims(g); render();} };
+document.getElementById('chipCyl').onclick=()=>{ const g=selGroup(); if(g){g.shape='cyl'; g.parts=null; applyGroupDims(g); render();} };
+document.getElementById('chipComposite').onclick=()=>{ const g=selGroup(); if(!g)return; if(g.shape!=='composite'){ g.parts=[{type:'box',L:g.oL,W:g.oW,H:g.oH,dx:0,dy:0,dz:0}]; } g.shape='composite'; syncComposite(g); applyGroupDims(g); render(); };
 function applyGroupDims(g){
-  items.filter(i=>i.groupId===g.id).forEach(i=>{ i.shape=g.shape; i.oL=g.oL; i.oW=g.oW; i.oH=g.oH; i.L=g.oL; i.W=g.oW; i.H=g.oH; i.stack=g.stack; });
+  items.filter(i=>i.groupId===g.id).forEach(i=>{ i.shape=g.shape; i.oL=g.oL; i.oW=g.oW; i.oH=g.oH; i.L=g.oL; i.W=g.oW; i.H=g.oH; i.stack=g.stack; i.parts=(g.shape==='composite'&&g.parts)?cloneParts(g.parts):null; });
 }
 ['inL','inW','inH'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',e=>{ const g=selGroup(); if(!g)return;
+  document.getElementById(id).addEventListener('input',e=>{ const g=selGroup(); if(!g)return; if(g.shape==='composite') return; // 组合件尺寸由子形状决定
     const L=parseFloat(document.getElementById('inL').value), W=parseFloat(document.getElementById('inW').value), H=parseFloat(document.getElementById('inH').value);
     if(isNaN(L)||isNaN(W)||isNaN(H)) return;   // 允许输入中间态（如 "1."）不更新模型
     g.oL=Math.max(0.1,L); g.oW=Math.max(0.1,W); g.oH=Math.max(0.1,H);
@@ -687,6 +818,7 @@ document.getElementById('stackToggle').onclick=()=>{ const g=selGroup(); if(!g)r
 document.getElementById('qtyMinus').onclick=()=>{ const g=selGroup(); if(!g)return; if(countOf(g.id)<=1) return; const idx=items.findIndex(i=>i.groupId===g.id); removeItem(items[idx].id); render(); };
 document.getElementById('qtyPlus').onclick=()=>{ const g=selGroup(); if(!g)return; const n=addInstance(g); selId=n.id; render(); };
 document.getElementById('qtyVal').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; let n=Math.max(1, Math.floor(+e.target.value||1)); const cur=countOf(g.id); if(n>cur){ for(let k=0;k<n-cur;k++) addInstance(g); } else if(n<cur){ const ids=items.filter(i=>i.groupId===g.id).slice(0,cur-n).map(i=>i.id); items=items.filter(i=>!ids.includes(i.id)); if(ids.includes(selId)) selId=null; } const first=items.find(i=>i.groupId===g.id); if(first) selId=first.id; render(); });
+document.getElementById('peAdd').onclick=()=>{ const g=selGroup(); if(!g||g.shape!=='composite') return; g.parts.push({type:'box',L:0.6,W:0.6,H:0.6,dx:0,dy:0,dz:0}); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); };
 document.getElementById('delBtn').onclick=()=>{ const g=selGroup(); if(g) removeGroup(g.id); };
 document.getElementById('dupBtn').onclick=()=>{ const g=selGroup(); if(!g)return; const ng=addGroup(g.shape,g.oL,g.oW,g.oH,g.stack); selId=items[items.length-1].id; render(); };
 document.getElementById('autoBtn').onclick=optimalPlan;
@@ -726,12 +858,14 @@ function optimalPlan(){
   const c=CONTAINERS[curSpec];
   const allowRot=document.getElementById('rotChk').checked;
   // work units: one per instance, ordered by volume desc (best-fit decreasing)
-  const work=items.map(it=>({ref:it, shape:it.shape, oL:it.oL, oW:it.oW, oH:it.oH, stack:it.stack}));
+  const work=items.map(it=>({ref:it, shape:it.shape, oL:it.oL, oW:it.oW, oH:it.oH, stack:it.stack, parts: it.parts? cloneParts(it.parts): null}));
   work.sort((a,b)=>(b.oL*b.oW*b.oH)-(a.oL*a.oW*a.oH));
   const placed=[];
   let placedCount=0, overCount=0;
   for(const w of work){
-    const ors = w.shape==='cyl'? orientCyl(w.oL,w.oW,w.oH) : orientBox(w.oL,w.oW,w.oH, allowRot);
+    let ors;
+    if(w.shape==='cyl') ors=orientCyl(w.oL,w.oW,w.oH);
+    else ors=orientBox(w.oL,w.oW,w.oH, allowRot); // 长方体与组合件均按外接长方体（包络）排布
     const cand=candidatePoints(placed,c);
     let best=null, bestScore=Infinity;
     for(const pt of cand){
@@ -760,9 +894,11 @@ function optimalPlan(){
   planned=true;
   const total=work.length;
   const util = total? Math.min(100, items.reduce((s,i)=>s+i.L*i.W*i.H,0)/c.vol*100):0;
-  const method = allowRot
+  const hasComp = work.some(w=>w.shape==='composite');
+  const method = (allowRot
     ? `已运行自动最优排布：3D 启发式装箱（最大先放 + 旋转择优 + 极限点堆叠），共放置 ${placedCount}/${total} 件，利用率 ${util.toFixed(1)}%。`
-    : `已运行自动最优排布：3D 启发式装箱（最大先放 + 极限点堆叠，不旋转），共放置 ${placedCount}/${total} 件，利用率 ${util.toFixed(1)}%。`;
+    : `已运行自动最优排布：3D 启发式装箱（最大先放 + 极限点堆叠，不旋转），共放置 ${placedCount}/${total} 件，利用率 ${util.toFixed(1)}%。`)
+    + (hasComp? ' 注：组合件（异形）按各子形状外接长方体（包络）整体排布，实际空隙通常大于该利用率。':'');
   document.getElementById('methodTxt').textContent=method;
   render();
 }
