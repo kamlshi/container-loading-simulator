@@ -271,7 +271,7 @@
 
       <div class="card">
         <h3>操作提示</h3>
-        <div class="tip blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E54E0" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="#1E54E0" stroke-width="1.8" stroke-linecap="round"/></svg><span>左侧为主 3D 透视，右侧同步显示俯视 / 正视 / 右视三视图——四个角度一起看，装货程度最清晰。可拖动货物手动摆放，开启「可堆叠」后拖到上方自动叠高；位置 X/Y/Z 可精确定位；点「透视」可看穿柜壁看清内部堆叠。堆叠接触处橙色虚线标接缝，生成计划后可用「恢复手动摆放」继续微调。</span></div>
+        <div class="tip blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E54E0" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="#1E54E0" stroke-width="1.8" stroke-linecap="round"/></svg><span>左侧为主 3D 透视，右侧同步显示俯视 / 正视 / 右视三视图——四个角度一起看，装货程度最清晰。<b>四个视图均可直接拖动货物调整位置，且任意一处改动都会实时联动刷新其他三视图</b>：3D 与俯视图拖动改底面 X/Z，正视图拖动改 X/层高，右视图拖动改 Z/层高；开启「可堆叠」后在 3D 或俯视图拖到上方会自动叠高。位置 X/Y/Z 也可精确定位；点「透视」可看穿柜壁看清内部堆叠。堆叠接触处橙色虚线标接缝，生成计划后可用「恢复手动摆放」继续微调。</span></div>
       </div>
     </div>
   </div>
@@ -778,19 +778,64 @@ function pickItem(mx,my){
 cv.addEventListener('mousedown',e=>{
   const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
   const it=pickItem(mx,my);
-  if(it){ selId=it.id; drag={it,sx:mx,sy:my,ox:it.x,oz:it.z}; render(); }
+  if(it){ selId=it.id; drag={view:'3d', it,sx:mx,sy:my,ox:it.x,oy:it.y,oz:it.z}; render(); }
 });
 window.addEventListener('mousemove',e=>{
   if(!drag) return;
-  const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
-  const dxs=mx-drag.sx, dys=my-drag.sy;
-  const k=K*scale*zoom, m=M*scale*zoom;
-  const dx=((dxs/k)+(dys/m))/2, dz=((dys/m)-(dxs/k))/2;
-  drag.it.x=drag.ox+dx; drag.it.z=drag.oz+dz;
-  clampItem(drag.it); resolveStack(drag.it);
+  if(drag.view==='3d'){
+    const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const dxs=mx-drag.sx, dys=my-drag.sy;
+    const k=K*scale*zoom, m=M*scale*zoom;
+    const dx=((dxs/k)+(dys/m))/2, dz=((dys/m)-(dxs/k))/2;
+    drag.it.x=drag.ox+dx; drag.it.z=drag.oz+dz;
+    clampItem(drag.it); resolveStack(drag.it);
+  } else {
+    const cvEl = drag.view==='top'?cvTop: drag.view==='front'?cvFront: cvRight;
+    const r=cvEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const f=drag.f, dwx=(mx-drag.sx)/f.s;
+    if(drag.view==='top'){ drag.it.x=drag.ox+dwx; drag.it.z=drag.oz+(my-drag.sy)/f.s; clampItem(drag.it); resolveStack(drag.it); }
+    else if(drag.view==='front'){ drag.it.x=drag.ox+dwx; drag.it.y=drag.oy+(drag.sy-my)/f.s; clampItem(drag.it); }
+    else { drag.it.z=drag.oz+dwx; drag.it.y=drag.oy+(drag.sy-my)/f.s; clampItem(drag.it); }
+  }
   render();
 });
 window.addEventListener('mouseup',()=>{ drag=null; });
+
+// drag on orthographic views (Top / Front / Right) — 拖动后通过 render() 联动刷新所有视图
+function orthoFitFor(view){
+  const c=CONTAINERS[curSpec];
+  const cvEl= view==='top'?cvTop: view==='front'?cvFront: cvRight;
+  const w= view==='top'?c.L : view==='front'?c.L : c.W;
+  const h= view==='top'?c.W : c.H;
+  return {f:orthoFit(cvEl,w,h), cvEl};
+}
+function orthoPick(mx,my,view){
+  const c=CONTAINERS[curSpec];
+  const {f}=orthoFitFor(view);
+  // 排序：让遮挡在前（最上/最前）的货件优先被选中
+  const order = view==='top' ?[...items].sort((a,b)=>b.y-a.y)
+              : view==='front'?[...items].sort((a,b)=>b.z-a.z)
+              : [...items].sort((a,b)=>b.x-a.x);
+  for(const it of order){
+    let x0,y0,w,h;
+    if(view==='top'){ x0=f.ox+it.x*f.s; y0=f.oy+it.z*f.s; w=it.L*f.s; h=it.W*f.s; }
+    else if(view==='front'){ x0=f.ox+it.x*f.s; y0=f.oy+(c.H-(it.y+it.H))*f.s; w=it.L*f.s; h=it.H*f.s; }
+    else { x0=f.ox+it.z*f.s; y0=f.oy+(c.H-(it.y+it.H))*f.s; w=it.W*f.s; h=it.H*f.s; }
+    if(mx>=x0&&mx<=x0+w&&my>=y0&&my<=y0+h) return it;
+  }
+  return null;
+}
+function bindOrtho(view, cvEl){
+  cvEl.style.cursor='grab';
+  cvEl.addEventListener('mousedown',e=>{
+    const r=cvEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const it=orthoPick(mx,my,view);
+    if(it){ selId=it.id; const {f}=orthoFitFor(view); drag={view, it, sx:mx,sy:my, ox:it.x, oy:it.y, oz:it.z, f}; cvEl.style.cursor='grabbing'; render(); }
+  });
+  cvEl.addEventListener('mouseup',()=>{ cvEl.style.cursor='grab'; });
+  cvEl.addEventListener('mouseleave',()=>{ if(!drag) cvEl.style.cursor='grab'; });
+}
+bindOrtho('top',cvTop); bindOrtho('front',cvFront); bindOrtho('right',cvRight);
 
 // ---------- controls ----------
 document.getElementById('specSel').addEventListener('change',e=>{ curSpec=e.target.value; zoom=1; render(); });
