@@ -349,6 +349,10 @@
           <div class="co-sum" id="costSum"></div>
           <div class="co-plan" id="costPlan"></div>
           <div class="co-detail" id="costDetail"></div>
+          <div id="costPlayAll" style="display:none;gap:8px;margin-top:4px">
+            <button class="btn-primary" id="playAllBtn" style="flex:1;height:38px;font-size:13px">▶ 全部连播（多柜装柜动画）</button>
+            <button class="btn-line" id="stopPlayAllBtn" style="display:none;height:38px;font-size:13px;color:var(--red);border-color:#F6C9CA">停止</button>
+          </div>
           <div class="muted" id="costNote"></div>
         </div>
       </div>
@@ -423,6 +427,7 @@
         <div class="muted">各方向占用深度（最远触及 / 柜内尺寸）。配合俯视 / 正视 / 右视三视图，装货程度一目了然。</div>
         <div class="layers" id="layerStrips"></div>
         <div class="muted">分层填充（自底向上，单位 m），绿色越深表示该层越满。</div>
+        <div id="cgInfo" style="margin-top:10px;padding:8px 10px;border-radius:6px;font-size:13px;font-weight:600;background:rgba(22,84,224,0.06)"></div>
       </div>
 
       <div class="card">
@@ -455,10 +460,10 @@ const CONTAINERS = {
   '40GP':{name:'40尺标准柜', L:12.043, W:2.336, H:2.379, vol:66.9, payload:27.4},
   '40HC':{name:'40尺高柜', L:12.055, W:2.345, H:2.685, vol:75.9, payload:29.6},
   '45HC':{name:'45尺高柜', L:13.580, W:2.347, H:2.696, vol:86.0, payload:28.7},
-  '20RF':{name:'20尺冷藏柜', L:5.440, W:2.294, H:2.273, vol:28.4, payload:24.25},
-  '40RF':{name:'40尺冷藏柜', L:11.577, W:2.294, H:2.210, vol:58.7, payload:28.55},
-  '40RH':{name:'40尺冷藏高柜', L:11.577, W:2.294, H:2.509, vol:66.6, payload:28.35},
-  '45RH':{name:'45尺冷藏高柜', L:13.102, W:2.286, H:2.509, vol:75.2, payload:27.3},
+  '20RF':{name:'20尺冷藏柜', L:5.440, W:2.294, H:2.273, vol:28.4, payload:21.0},
+  '40RF':{name:'40尺冷藏柜', L:11.577, W:2.294, H:2.210, vol:58.7, payload:26.0},
+  '40RH':{name:'40尺冷藏高柜', L:11.577, W:2.294, H:2.509, vol:66.6, payload:27.5},
+  '45RH':{name:'45尺冷藏高柜', L:13.102, W:2.286, H:2.509, vol:75.2, payload:26.5},
 };
 const PALETTE = ['hsl(40,92%,58%)','hsl(168,70%,46%)','hsl(250,78%,72%)','hsl(212,85%,64%)','hsl(145,65%,52%)','hsl(20,85%,60%)'];
 let paletteIdx = 0;
@@ -880,12 +885,12 @@ function feasibleLoadOrder(){
   arr.filter(it=>!loaded.has(it)).forEach(it=>order.push(it)); // 兜底：异常浮动件直接追加，避免动画缺件
   return order;
 }
-function updateLoadUI(p,N){
+function updateLoadUI(p,N,label){
   const done=Math.min(N, Math.round(p*N));
-  document.getElementById('loadTxt').textContent='装柜中 '+done+' / '+N;
+  document.getElementById('loadTxt').textContent=(label?label+' · ':'')+'装柜中 '+done+' / '+N;
   document.getElementById('loadFill').style.width=(p*100).toFixed(1)+'%';
 }
-function playLoading(onDone){
+function playLoading(onDone,label,keepBar){
   if(!items.length){ if(onDone) onDone(); return; }
   loadSeq = feasibleLoadOrder();
   const N = loadSeq.length;
@@ -901,16 +906,16 @@ function playLoading(onDone){
     if(el < doorDur){                                             // 阶段1：开门（货尚未入柜）
       doorAngle = DOOR_OPEN * easeOut(el/doorDur);
       loadT = 0; renderMain(0);
-      document.getElementById('loadTxt').textContent='开门中…';
+      document.getElementById('loadTxt').textContent=(label?label+' · ':'')+'开门中…';
       document.getElementById('loadFill').style.width='0%';
     } else {                                                      // 阶段2：装货（柜门保持全开）
       const lp = Math.min(1,(el-doorDur)/loadDur);
       doorAngle = DOOR_OPEN;
-      loadT = lp; renderMain(lp); updateLoadUI(lp,N);
+      loadT = lp; renderMain(lp); updateLoadUI(lp,N,label);
     }
     if(el < total){ animRAF=requestAnimationFrame(frame); }
-    else { animRAF=null; doorAngle=DOOR_OPEN; loadT=1; renderMain(1); updateLoadUI(1,N);
-      setTimeout(()=>{ bar.style.display='none'; }, 600);
+    else { animRAF=null; doorAngle=DOOR_OPEN; loadT=1; renderMain(1); updateLoadUI(1,N,label);
+      if(!keepBar) setTimeout(()=>{ bar.style.display='none'; }, 600);
       if(onDone) onDone();
     }
   }
@@ -998,9 +1003,9 @@ function rebuildPartsEditor(g){
     list.appendChild(row);
   });
   drawPePreview(g);
-  list.querySelectorAll('.pe-del').forEach(btn=>btn.onclick=()=>{ const i=+btn.dataset.i; if(g.parts.length<=1) return; g.parts.splice(i,1); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); });
-  list.querySelectorAll('.pe-type').forEach(sel=>sel.onchange=()=>{ const i=+sel.dataset.i; g.parts[i].type=sel.value; applyGroupDims(g); drawPePreview(g); render(); });
-  list.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{ const i=+inp.dataset.i, f=inp.dataset.f; const v=parseFloat(inp.value); if(isNaN(v)) return; g.parts[i][f]= f.startsWith('d')? Math.max(0,toM(v)) : Math.max(0.1,toM(v)); syncComposite(g); applyGroupDims(g); drawPePreview(g); render(); });
+  list.querySelectorAll('.pe-del').forEach(btn=>btn.onclick=()=>{ const i=+btn.dataset.i; if(g.parts.length<=1) return; saveHistory(); g.parts.splice(i,1); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); });
+  list.querySelectorAll('.pe-type').forEach(sel=>sel.onchange=()=>{ const i=+sel.dataset.i; saveHistory(); g.parts[i].type=sel.value; applyGroupDims(g); drawPePreview(g); render(); });
+  list.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{ const i=+inp.dataset.i, f=inp.dataset.f; const v=parseFloat(inp.value); if(isNaN(v)) return; _saveHistOnInput(); g.parts[i][f]= f.startsWith('d')? Math.max(0,toM(v)) : Math.max(0.1,toM(v)); syncComposite(g); applyGroupDims(g); drawPePreview(g); render(); });
 }
 function updatePanels(){
   const c=CONTAINERS[curSpec];
@@ -1029,7 +1034,7 @@ function updatePanels(){
     document.getElementById('chipComposite').classList.toggle('on',g.shape==='composite');
     const isComp = g.shape==='composite';
     ['inL','inW','inH'].forEach(id=>{ const el=document.getElementById(id); el.disabled=isComp; el.style.opacity=isComp?0.5:1; });
-    if(isComp){ setVal('inL',(+g.oL).toFixed(2)); setVal('inW',(+g.oW).toFixed(2)); setVal('inH',(+g.oH).toFixed(2)); }
+    if(isComp){ setVal('inL',fromM(g.oL).toFixed(2)); setVal('inW',fromM(g.oW).toFixed(2)); setVal('inH',fromM(g.oH).toFixed(2)); }
     else { setVal('inL',fromM(g.oL).toFixed(2)); setVal('inW',fromM(g.oW).toFixed(2)); setVal('inH',fromM(g.oH).toFixed(2)); }
     ensurePartsEditor(g);
     setVal('qtyVal',countOf(g.id));
@@ -1046,7 +1051,7 @@ function updatePanels(){
   const overflowItems=items.filter(i=>i.overflow);
   const over=overflowItems.length;
   const placed=total-over;
-  const usedVol=items.reduce((s,i)=>s+i.L*i.W*i.H,0);
+  const usedVol=items.filter(i=>!i.overflow).reduce((s,i)=>s+i.L*i.W*i.H,0);
   const util= total? Math.min(100, usedVol/c.vol*100) : 0;
   const stIcon=document.getElementById('stIcon'), stTxt=document.getElementById('stTxt');
   const progFill=document.getElementById('progFill'); progFill.classList.toggle('over', over>0);
@@ -1064,6 +1069,26 @@ function updatePanels(){
   document.getElementById('barH').style.width=pHi+'%'; document.getElementById('txtH').textContent=pHi.toFixed(0)+'%';
   const N=8, th=c.H/N, strip=document.getElementById('layerStrips'); strip.innerHTML='';
   for(let k=0;k<N;k++){ const y0=k*th, y1=(k+1)*th; let v=0; pl.forEach(i=>{ const lo=Math.max(y0,i.y), hi=Math.min(y1,i.y+i.H); if(hi>lo) v+=i.L*i.W*(hi-lo); }); const pct=Math.min(100, v/(c.L*c.W*th)*100); const bg= pct<3?'transparent':`hsl(150,${35+pct*0.5}%,${76-pct*0.38}%)`; const row=document.createElement('div'); row.className='lrow'; row.innerHTML=`<span class="ll">${y0.toFixed(1)}</span><span class="lstrip"><i style="width:${pct}%;background:${bg}"></i></span>`; strip.appendChild(row); }
+  // 重心均衡校验
+  const cgEl=document.getElementById('cgInfo');
+  if(cgEl){
+    const cg=computeCenterOfGravity(items);
+    if(cg){
+      const offX=cg.cx-c.L/2, offZ=cg.cz-c.W/2;
+      const offDist=Math.sqrt(offX*offX+offZ*offZ);
+      const maxOff=Math.max(c.L,c.W)/6;
+      const ok=offDist<maxOff;
+      cgEl.style.background=ok?'rgba(22,163,74,0.08)':'rgba(229,72,77,0.08)';
+      cgEl.style.color=ok?'#16A34A':'#E5484D';
+      cgEl.innerHTML=(ok?'✓ 重心均衡':'⚠ 偏载警告')
+        +' · 偏移 X '+(offX>=0?'+':'')+offX.toFixed(2)+'m / Z '+(offZ>=0?'+':'')+offZ.toFixed(2)+'m'
+        +' · 总偏离 '+offDist.toFixed(2)+'m（阈值 '+maxOff.toFixed(2)+'m）';
+    } else {
+      cgEl.style.background='rgba(91,102,120,0.06)';
+      cgEl.style.color='#5B6678';
+      cgEl.textContent='暂无货物，重心待计算';
+    }
+  }
   // per-group check
   const cl=document.getElementById('chkList'); cl.innerHTML='';
   groups.forEach(g=>{
@@ -1080,8 +1105,8 @@ function updatePanels(){
   if(groups.length===0){ cl.innerHTML='<div class="muted">尚未添加货物。</div>'; }
 }
 function select(id){ selId=id; render(); }
-function removeItem(id){ items=items.filter(i=>i.id!==id); if(selId===id) selId=items[0]?items[0].id:null; render(); }
-function removeGroup(gid){ groups=groups.filter(g=>g.id!==gid); items=items.filter(i=>i.groupId!==gid); if(getSel() && getSel().groupId===gid) selId=items[0]?items[0].id:null; render(); }
+function removeItem(id){ saveHistory(); items=items.filter(i=>i.id!==id); if(selId===id) selId=items[0]?items[0].id:null; render(); }
+function removeGroup(gid){ saveHistory(); groups=groups.filter(g=>g.id!==gid); items=items.filter(i=>i.groupId!==gid); if(getSel() && getSel().groupId===gid) selId=items[0]?items[0].id:null; render(); }
 
 // ---------- interaction ----------
 function clampItem(it){
@@ -1092,10 +1117,23 @@ function clampItem(it){
   it.y=Math.max(0,Math.min(c.H-it.H,+it.y||0));
 }
 function overlap(a,b){ return a.x<b.x+b.L&&a.x+a.L>b.x&&a.z<b.z+b.W&&a.z+a.W>b.z&&a.y<b.y+b.H&&a.y+a.H>b.y; }
+// 重心计算（按重量加权；无重量时按体积×100kg/m³估算）
+function computeCenterOfGravity(itemList){
+  const placed=itemList.filter(i=>!i.overflow);
+  let totalW=0, cx=0, cz=0;
+  placed.forEach(i=>{
+    const w = i.weight>0 ? i.weight : (i.L*i.W*i.H*100);
+    totalW += w;
+    cx += w * (i.x + i.L/2);
+    cz += w * (i.z + i.W/2);
+  });
+  if(totalW === 0) return null;
+  return { cx: cx/totalW, cz: cz/totalW, totalW };
+}
 function resolveStack(it){
   if(!it.stack) return;
   let top=0;
-  items.forEach(o=>{ if(o.id!==it.id && o.x<it.x+it.L&&it.x<o.x+o.L&&o.z<it.z+o.W&&o.z+it.W>o.z){ top=Math.max(top,o.y+o.H); } });
+  items.forEach(o=>{ if(o.id!==it.id && o.x<it.x+it.L&&it.x<o.x+o.L&&o.z<it.z+it.W&&it.z<o.z+o.W){ top=Math.max(top,o.y+o.H); } });
   const c=CONTAINERS[curSpec];
   it.y=Math.min(c.H-it.H, Math.max(0,top));
 }
@@ -1113,11 +1151,38 @@ function pickItem(mx,my){
   }
   return best;
 }
+// 屏幕坐标 → 世界坐标（射线与 y=groundY 平面求交，用于精确拖动）
+function screenToWorldGround(mx, my, groundY){
+  const c=CONTAINERS[curSpec];
+  const cp=Math.cos(pitch), sp=Math.sin(pitch);
+  const cyw=Math.cos(yaw), syw=Math.sin(yaw);
+  // 相机空间射线方向（depth=camDist 处归一化）
+  const dx=(mx-cxScreen)/(focal*zoom);
+  const dy=-(my-cyScreen)/(focal*zoom);
+  const dz=1;
+  // 逆 pitch
+  const ry1=dy*cp+dz*sp, rz1=-dy*sp+dz*cp, rx1=dx;
+  // 逆 yaw
+  const dirX=rx1*cyw-rz1*syw, dirY=ry1, dirZ=rx1*syw+rz1*cyw;
+  // 相机原点世界坐标
+  const origX=c.L/2 + camDist*cp*syw;
+  const origY=c.H/2 - camDist*sp;
+  const origZ=c.W/2 - camDist*cp*cyw;
+  if(Math.abs(dirY)<1e-9) return null; // 射线与地面平行
+  const t=(groundY-origY)/dirY;
+  if(t<0) return null; // 在相机后方
+  return { x:origX+dirX*t, z:origZ+dirZ*t };
+}
 cv.addEventListener('mousedown',e=>{
   autoRotate=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} doorAngle=0;
   const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
   const it=pickItem(mx,my);
-  if(it){ selId=it.id; drag={mode:'item', it,sx:mx,sy:my,ox:it.x,oz:it.z}; render(); }
+  if(it){
+    saveHistory();
+    const pt=screenToWorldGround(mx,my,it.y);
+    const offX=pt?pt.x-it.x:0, offZ=pt?pt.z-it.z:0;
+    selId=it.id; drag={mode:'item', it,sx:mx,sy:my,ox:it.x,oz:it.z,offX,offZ}; render();
+  }
   else { drag={mode:'orbit', sx:mx, sy:my}; }
 });
 window.addEventListener('mousemove',e=>{
@@ -1137,12 +1202,13 @@ window.addEventListener('mousemove',e=>{
     pitch = Math.max(-1.45, Math.min(1.45, pitch + (my-drag.sy)*0.01));
     drag.sx=mx; drag.sy=my; renderMain(1);
   } else if(drag.mode==='item'){
-    const fpx=(focal*zoom)/camDist;
-    const dCamX=(mx-drag.sx)/fpx, dCamY=-(my-drag.sy)/fpx;
-    const worldX=dCamX*Math.cos(yaw)+dCamY*Math.sin(yaw);
-    const worldZ=-dCamX*Math.sin(yaw)+dCamY*Math.cos(yaw);
-    drag.it.x=drag.ox+worldX; drag.it.z=drag.oz+worldZ;
-    clampItem(drag.it); resolveStack(drag.it); render();
+    const groundY=drag.it.y;
+    const pt=screenToWorldGround(mx,my,groundY);
+    if(pt){
+      drag.it.x=pt.x-(drag.offX||0);
+      drag.it.z=pt.z-(drag.offZ||0);
+      clampItem(drag.it); resolveStack(drag.it); render();
+    }
   }
 });
 window.addEventListener('mouseup',()=>{ if(drag){ drag=null; render(); } });
@@ -1185,9 +1251,10 @@ function bindOrtho(view, cvEl){
 bindOrtho('top',cvTop); bindOrtho('front',cvFront); bindOrtho('right',cvRight);
 
 // ---------- controls ----------
-document.getElementById('specSel').addEventListener('change',e=>{ curSpec=e.target.value; zoom=1.15; render(); });
-document.getElementById('dimUnit').addEventListener('change',e=>{ dimUnit=e.target.value; render(); });
+document.getElementById('specSel').addEventListener('change',e=>{ saveHistory(); curSpec=e.target.value; zoom=1.15; render(); });
+document.getElementById('dimUnit').addEventListener('change',e=>{ saveHistory(); dimUnit=e.target.value; render(); });
 function doAddCargo(){
+  saveHistory();
   // 读取货物清单卡片自带的尺寸输入框（单位：米），空值回退默认 1.2×1.0×1.0，保证永远有响应
   const L=Math.max(0.1, +document.getElementById('addL').value||1.2);
   const W=Math.max(0.1, +document.getElementById('addW').value||1.0);
@@ -1196,9 +1263,9 @@ function doAddCargo(){
 }
 document.getElementById('addCargo').onclick=doAddCargo;
 document.getElementById('addBtn').onclick=doAddCargo;
-document.getElementById('chipBox').onclick=()=>{ const g=selGroup(); if(g){g.shape='box'; g.parts=null; applyGroupDims(g); render();} };
-document.getElementById('chipCyl').onclick=()=>{ const g=selGroup(); if(g){g.shape='cyl'; g.parts=null; applyGroupDims(g); render();} };
-document.getElementById('chipComposite').onclick=()=>{ const g=selGroup(); if(!g)return; if(g.shape!=='composite'){ g.parts=[{type:'box',L:g.oL,W:g.oW,H:g.oH,dx:0,dy:0,dz:0}]; } g.shape='composite'; syncComposite(g); applyGroupDims(g); render(); };
+document.getElementById('chipBox').onclick=()=>{ const g=selGroup(); if(g){saveHistory(); g.shape='box'; g.parts=null; applyGroupDims(g); render();} };
+document.getElementById('chipCyl').onclick=()=>{ const g=selGroup(); if(g){saveHistory(); g.shape='cyl'; g.parts=null; applyGroupDims(g); render();} };
+document.getElementById('chipComposite').onclick=()=>{ const g=selGroup(); if(!g)return; saveHistory(); if(g.shape!=='composite'){ g.parts=[{type:'box',L:g.oL,W:g.oW,H:g.oH,dx:0,dy:0,dz:0}]; } g.shape='composite'; syncComposite(g); applyGroupDims(g); render(); };
 function applyGroupDims(g){
   items.filter(i=>i.groupId===g.id).forEach(i=>{ i.shape=g.shape; i.oL=g.oL; i.oW=g.oW; i.oH=g.oH; i.L=g.oL; i.W=g.oW; i.H=g.oH; i.stack=g.stack; i.parts=(g.shape==='composite'&&g.parts)?cloneParts(g.parts):null; });
 }
@@ -1206,27 +1273,28 @@ function applyGroupDims(g){
   document.getElementById(id).addEventListener('input',e=>{ const g=selGroup(); if(!g)return; if(g.shape==='composite') return; // 组合件尺寸由子形状决定
     const L=toM(document.getElementById('inL').value), W=toM(document.getElementById('inW').value), H=toM(document.getElementById('inH').value);
     if(!(L>0&&W>0&&H>0)) return;   // 允许输入中间态（如 "1."）不更新模型
+    _saveHistOnInput();
     g.oL=Math.max(0.1,L); g.oW=Math.max(0.1,W); g.oH=Math.max(0.1,H);
     if(g.shape==='cyl'){ g.oW=g.oL; setVal('inW',fromM(g.oW).toFixed(2)); }
     applyGroupDims(g); render(); });
 });
-document.getElementById('inWt').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; const w=Math.max(0,+e.target.value||0); g.weight=w; items.filter(i=>i.groupId===g.id).forEach(i=>i.weight=w); render(); });
+document.getElementById('inWt').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; const w=Math.max(0,+e.target.value||0); _saveHistOnInput(); g.weight=w; items.filter(i=>i.groupId===g.id).forEach(i=>i.weight=w); render(); });
 ['inX','inY','inZ'].forEach(id=>{
   document.getElementById(id).addEventListener('input',e=>{ const it=getSel(); if(!it)return;
-    const map={inX:'x',inY:'y',inZ:'z'}; it[map[id]]=toM(e.target.value); clampItem(it); resolveStack(it); render(); });
+    const map={inX:'x',inY:'y',inZ:'z'}; _saveHistOnInput(); it[map[id]]=toM(e.target.value); clampItem(it); resolveStack(it); render(); });
 });
-document.getElementById('stackToggle').onclick=()=>{ const g=selGroup(); if(!g)return; g.stack=!g.stack; applyGroupDims(g);
+document.getElementById('stackToggle').onclick=()=>{ const g=selGroup(); if(!g)return; saveHistory(); g.stack=!g.stack; applyGroupDims(g);
   if(g.stack){ items.filter(i=>i.groupId===g.id).forEach(resolveStack); } render(); };
-document.getElementById('qtyMinus').onclick=()=>{ const g=selGroup(); if(!g)return; if(countOf(g.id)<=1) return; const idx=items.findIndex(i=>i.groupId===g.id); removeItem(items[idx].id); render(); };
-document.getElementById('qtyPlus').onclick=()=>{ const g=selGroup(); if(!g)return; const n=addInstance(g); selId=n.id; render(); };
+document.getElementById('qtyMinus').onclick=()=>{ const g=selGroup(); if(!g)return; if(countOf(g.id)<=1) return; const idx=items.findIndex(i=>i.groupId===g.id); saveHistory(); removeItem(items[idx].id); render(); };
+document.getElementById('qtyPlus').onclick=()=>{ const g=selGroup(); if(!g)return; saveHistory(); const n=addInstance(g); selId=n.id; render(); };
 let qtyRenderTimer=null;
-document.getElementById('qtyVal').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; let n=Math.max(1, Math.floor(+e.target.value||1)); const cur=countOf(g.id); if(n>cur){ for(let k=0;k<n-cur;k++) addInstance(g); } else if(n<cur){ const ids=items.filter(i=>i.groupId===g.id).slice(0,cur-n).map(i=>i.id); items=items.filter(i=>!ids.includes(i.id)); if(ids.includes(selId)) selId=null; } const first=items.find(i=>i.groupId===g.id); if(first) selId=first.id; if(qtyRenderTimer) clearTimeout(qtyRenderTimer); qtyRenderTimer=setTimeout(()=>{ qtyRenderTimer=null; render(); },120); });
+document.getElementById('qtyVal').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; let n=Math.max(1, Math.floor(+e.target.value||1)); const cur=countOf(g.id); _saveHistOnInput(); if(n>cur){ for(let k=0;k<n-cur;k++) addInstance(g); } else if(n<cur){ const ids=items.filter(i=>i.groupId===g.id).slice(0,cur-n).map(i=>i.id); items=items.filter(i=>!ids.includes(i.id)); if(ids.includes(selId)) selId=null; } const first=items.find(i=>i.groupId===g.id); if(first) selId=first.id; if(qtyRenderTimer) clearTimeout(qtyRenderTimer); qtyRenderTimer=setTimeout(()=>{ qtyRenderTimer=null; render(); },120); });
 // 新增子形状时，默认放置在「当前包络顶部 + 偏向 +x/+z 角」，保证立刻可见、轮廓随构成变化（不再藏在包络内导致「看着还是长方体」）
-document.getElementById('peAdd').onclick=()=>{ const g=selGroup(); if(!g||g.shape!=='composite') return; const e=envOf(g.parts||[{L:g.oL,W:g.oW,H:g.oH}]); const dx=e.L>0.6?(e.L-0.6):0, dz=e.W>0.6?(e.W-0.6):0; g.parts.push({type:'box',L:0.6,W:0.6,H:0.6,dx,dy:e.H,dz}); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); };
+document.getElementById('peAdd').onclick=()=>{ const g=selGroup(); if(!g||g.shape!=='composite') return; saveHistory(); const e=envOf(g.parts||[{L:g.oL,W:g.oW,H:g.oH}]); const dx=e.L>0.6?(e.L-0.6):0, dz=e.W>0.6?(e.W-0.6):0; g.parts.push({type:'box',L:0.6,W:0.6,H:0.6,dx,dy:e.H,dz}); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); };
 document.getElementById('delBtn').onclick=()=>{ const g=selGroup(); if(g) removeGroup(g.id); };
-document.getElementById('dupBtn').onclick=()=>{ const g=selGroup(); if(!g)return; const ng=addGroup(g.shape,g.oL,g.oW,g.oH,g.stack,g.weight); selId=items[items.length-1].id; render(); };
+document.getElementById('dupBtn').onclick=()=>{ const g=selGroup(); if(!g)return; saveHistory(); const ng=addGroup(g.shape,g.oL,g.oW,g.oH,g.stack,g.weight); selId=items[items.length-1].id; render(); };
 document.getElementById('autoBtn').onclick=optimalPlan;
-document.getElementById('manualBtn').onclick=()=>{ planned=false; items.forEach(i=>i.overflow=false); document.getElementById('methodTxt').textContent='已恢复手动摆放，可自由拖动调整。再次点「生成最优装柜计划」可重新求最优排布。'; render(); };
+document.getElementById('manualBtn').onclick=()=>{ saveHistory(); planned=false; items.forEach(i=>i.overflow=false); document.getElementById('methodTxt').textContent='已恢复手动摆放，可自由拖动调整。再次点「生成最优装柜计划」可重新求最优排布。'; render(); };
 document.getElementById('playBtn').onclick=()=>{ if(animRAF) return; playLoading(null); };
 document.getElementById('recBtn').onclick=()=>{ if(animRAF) return; recordLoading(); };
 document.getElementById('vidAgain').onclick=()=>{ recordLoading(); };
@@ -1234,7 +1302,7 @@ document.getElementById('zIn').onclick=()=>{ zoom=Math.min(3.2,zoom*1.12); rende
 document.getElementById('zOut').onclick=()=>{ zoom=Math.max(0.35,zoom/1.12); render(); };
 document.getElementById('rot').onclick=()=>{ autoRotate=!autoRotate; document.getElementById('rot').classList.toggle('on',autoRotate); document.getElementById('viewMode').textContent= autoRotate?'透视 3D · 自动旋转':'透视 3D · 可拖动'; if(autoRotate){ if(!autoRAF) autoTick(); } else if(autoRAF){ cancelAnimationFrame(autoRAF); autoRAF=null; } };
 document.getElementById('seeThru').onclick=()=>{ seeThrough=!seeThrough; document.getElementById('seeThru').classList.toggle('on',seeThrough); render(); };
-document.getElementById('clear').onclick=()=>{ if(viewBackup) exitPreview(); items=[]; groups=[]; selId=null; planned=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} autoRotate=false; render(); };
+document.getElementById('clear').onclick=()=>{ if(viewBackup) exitPreview(); saveHistory(); items=[]; groups=[]; selId=null; planned=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} autoRotate=false; render(); };
 document.getElementById('exitPreview').onclick=exitPreview;
 document.getElementById('resetView').onclick=()=>{ yaw=0.6; pitch=-0.5; zoom=1.15; autoRotate=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} document.getElementById('rot').classList.remove('on'); document.getElementById('viewMode').textContent='透视 3D · 可拖动'; render(); };
 document.getElementById('orthoTab').onclick=()=>{
@@ -1478,6 +1546,7 @@ document.getElementById('plUnit').addEventListener('change',()=>{ if(lastParsed)
 document.getElementById('plCancel').onclick=()=>{ document.getElementById('plPreview').style.display='none'; document.getElementById('plFile').value=''; lastParsed=null; hidePLMsg(); };
 document.getElementById('plImport').onclick=()=>{
   if(!lastParsed) return;
+  saveHistory();
   const sc=curScale();
   let n=0;
   lastParsed.items.forEach((it)=>{
@@ -1657,12 +1726,17 @@ function computeCostPlan(){
 function packIntoContainer(specKey, pool, allowRot){
   const c=CONTAINERS[specKey];
   const payKg=c.payload*1000;
-  const work=pool.slice().sort((a,b)=>(b.oL*b.oW*b.oH)-(a.oL*a.oW*a.oH));
+  const work=pool.slice().sort((a,b)=>{
+    const va=(a.weight||0)/1000*2 + a.oL*a.oW*a.oH;
+    const vb=(b.weight||0)/1000*2 + b.oL*b.oW*b.oH;
+    return vb-va;
+  });
+  const minDim = Math.min(...work.map(w=>Math.min(w.oL,w.oW)));
   const placed=[], placedSet=new Set(); let usedWt=0;
   for(const w of work){
     if(placedSet.has(w)) continue;
     const ors = w.shape==='cyl'? orientCyl(w.oL,w.oW,w.oH) : orientBox(w.oL,w.oW,w.oH, allowRot);
-    const cand=candidatePoints(placed,c);
+    const cand=candidatePoints(placed,c,minDim);
     let best=null, bestScore=Infinity;
     for(const pt of cand){
       for(const o of ors){
@@ -1711,10 +1785,12 @@ function renderMini(canvasEl, specKey, conItems){
 }
 // 在 3D 主视图中查看某柜（带快照，可一键返回货物全景，不破坏原货物）
 let viewBackup=null, viewBackupSpec=null;
+let _lastPlanContainers=null;   // 最近一次成本方案的柜列表（用于连播）
+let _playAllStop=false;         // 连播停止标志
 function viewContainer(specKey, conItems){
   if(!viewBackup){ viewBackup=items.slice(); viewBackupSpec=curSpec; }
   curSpec=specKey;
-  items=conItems.map(it=>({ id:uid++, groupId:it.groupId, shape:it.shape, oL:it.L, oW:it.W, oH:it.H, L:it.L, W:it.W, H:it.H, x:it.x, y:it.y, z:it.z, stack:true, color:it.color, overflow:false, parts: it.parts? cloneParts(it.parts): null }));
+  items=conItems.map(it=>({ id:uid++, groupId:it.groupId, shape:it.shape, oL:it.L, oW:it.W, oH:it.H, L:it.L, W:it.W, H:it.H, x:it.x, y:it.y, z:it.z, stack:true, color:it.color, overflow:false, parts: it.parts? cloneParts(it.parts): null, weight:it.weight||0 }));
   planned=true; loadSeq=feasibleLoadOrder(); render();
   const b=document.getElementById('exitPreview'); if(b) b.style.display='flex';
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1722,6 +1798,66 @@ function viewContainer(specKey, conItems){
 function exitPreview(){
   if(viewBackup){ items=viewBackup; curSpec=viewBackupSpec; viewBackup=null; viewBackupSpec=null; planned=false; loadSeq=[]; render(); }
   const b=document.getElementById('exitPreview'); if(b) b.style.display='none';
+}
+// ---------- 多柜连播 ----------
+function playAllContainers(){
+  if(!_lastPlanContainers || _lastPlanContainers.length<2) return;
+  if(animRAF) return;
+  _playAllStop=false;
+  // 保存当前状态
+  if(!viewBackup){ viewBackup=items.slice(); viewBackupSpec=curSpec; }
+  // UI 切换
+  document.getElementById('playAllBtn').style.display='none';
+  document.getElementById('stopPlayAllBtn').style.display='inline-block';
+  document.getElementById('exitPreview').style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  const list=_lastPlanContainers;
+  let idx=0;
+  const bar=document.getElementById('loadBar'); bar.style.display='flex';
+
+  function loadCon(i){
+    const con=list[i];
+    const c=CONTAINERS[con.specKey];
+    curSpec=con.specKey;
+    items=con.placed.map(it=>({ id:uid++, groupId:it.groupId, shape:it.shape, oL:it.L, oW:it.W, oH:it.H, L:it.L, W:it.W, H:it.H, x:it.x, y:it.y, z:it.z, stack:true, color:it.color, overflow:false, parts: it.parts? cloneParts(it.parts): null, weight:it.weight||0 }));
+    planned=true; loadSeq=feasibleLoadOrder();
+    doorAngle=0; loadT=0;
+    const label=`柜 ${i+1}/${list.length} · ${c.name}（${con.specKey}）`;
+    // 先显示柜号 0.8s（关门状态），再开始装柜动画
+    document.getElementById('loadTxt').textContent=label+' · 准备装柜';
+    document.getElementById('loadFill').style.width='0%';
+    renderMain(0);
+    setTimeout(()=>{
+      if(_playAllStop) return;
+      playLoading(()=>{
+        if(_playAllStop) return;
+        setTimeout(()=>{
+          idx++;
+          if(idx>=list.length){ finishAll(); }
+          else { loadCon(idx); }
+        }, 900);
+      }, label, true);
+    }, 800);
+  }
+  function finishAll(){
+    _playAllStop=false;
+    if(animRAF){ cancelAnimationFrame(animRAF); animRAF=null; }
+    _cleanupPlayAll();
+  }
+  loadCon(0);
+}
+function _cleanupPlayAll(){
+  doorAngle=0; loadT=1;
+  const bar=document.getElementById('loadBar'); if(bar) bar.style.display='none';
+  const pb=document.getElementById('playAllBtn'); if(pb) pb.style.display='inline-block';
+  const sb=document.getElementById('stopPlayAllBtn'); if(sb) sb.style.display='none';
+  exitPreview();
+}
+function stopPlayAll(){ 
+  _playAllStop=true; 
+  if(animRAF){ cancelAnimationFrame(animRAF); animRAF=null; }
+  _cleanupPlayAll();
 }
 function showCostMsg(msg, isErr){ const el=document.getElementById('costMsg'); el.style.display='block'; el.className='plmsg'+(isErr?' err':' ok'); el.textContent=msg; document.getElementById('costResult').style.display='none'; }
 function renderCostResult(agg, planLines, totalCost, util, loadFactor, cand, cost, planContainers, overflowMsg){
@@ -1766,11 +1902,18 @@ function renderCostResult(agg, planLines, totalCost, util, loadFactor, cand, cos
   });
   planContainers.forEach((con,idx)=>{ const cvs=document.getElementById('mini'+idx); if(cvs) renderMini(cvs, con.specKey, con.placed); });
   if(overflowMsg){ const w=document.createElement('div'); w.className='co-warn'; w.textContent='⚠ '+overflowMsg; det.appendChild(w); }
+  // 保存柜列表供连播使用
+  _lastPlanContainers = planContainers;
+  const pa=document.getElementById('costPlayAll');
+  if(pa) pa.style.display = planContainers.length>1 ? 'flex' : 'none';
   document.getElementById('costResult').style.display='flex';
   const costCard=document.getElementById('costCard'); if(costCard && costCard.scrollIntoView) costCard.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 document.getElementById('costRun').onclick=computeCostPlan;
 document.getElementById('loadFactor').addEventListener('change',()=>{ if(document.getElementById('costResult').style.display!=='none') computeCostPlan(); });
+document.getElementById('playAllBtn').onclick=playAllContainers;
+document.getElementById('stopPlayAllBtn').onclick=stopPlayAll;
+window.addEventListener('keydown',e=>{ if(e.key==='Escape' && document.getElementById('stopPlayAllBtn').style.display!=='none'){ stopPlayAll(); } });
 buildFreightUI();
 
 // ---------- optimal packing engine ----------
@@ -1783,9 +1926,9 @@ function orientBox(oL,oW,oH, allowRot){
   return out;
 }
 function orientCyl(oL,oW,oH){ const diam=Math.min(oL,oW); return [{L:diam,W:diam,H:oH}]; }
-function candidatePoints(placed, c){
+function candidatePoints(placed, c, minDim){
   const pts=[[0,0,0],[c.L,0,0],[0,0,c.W],[c.L,0,c.W]];
-  const g=0.5;
+  const g = minDim ? Math.min(0.5, Math.max(0.05, minDim/2)) : 0.5;
   for(let x=0;x<=c.L+1e-6;x+=g) for(let z=0;z<=c.W+1e-6;z+=g) pts.push([x,0,z]);
   for(const p of placed){
     const cx=p.x+p.L/2, cz=p.z+p.W/2, top=p.y+p.H;
@@ -1801,19 +1944,25 @@ function candidatePoints(placed, c){
   return pts;
 }
 function optimalPlan(){
+  saveHistory();
   if(viewBackup) exitPreview();
   const c=CONTAINERS[curSpec];
   const allowRot=document.getElementById('rotChk').checked;
-  // work units: one per instance, ordered by volume desc (best-fit decreasing)
-  const work=items.map(it=>({ref:it, shape:it.shape, oL:it.oL, oW:it.oW, oH:it.oH, stack:it.stack, parts: it.parts? cloneParts(it.parts): null}));
-  work.sort((a,b)=>(b.oL*b.oW*b.oH)-(a.oL*a.oW*a.oH));
+  // work units: one per instance, ordered by weight+volume desc (重货优先放底部)
+  const work=items.map(it=>({ref:it, shape:it.shape, oL:it.oL, oW:it.oW, oH:it.oH, stack:it.stack, weight:it.weight||0, parts: it.parts? cloneParts(it.parts): null}));
+  work.sort((a,b)=>{
+    const va=(a.weight||0)/1000*2 + a.oL*a.oW*a.oH;
+    const vb=(b.weight||0)/1000*2 + b.oL*b.oW*b.oH;
+    return vb-va;
+  });
+  const minDim = Math.min(...work.map(w=>Math.min(w.oL,w.oW)));
   const placed=[];
   let placedCount=0, overCount=0;
   for(const w of work){
     let ors;
     if(w.shape==='cyl') ors=orientCyl(w.oL,w.oW,w.oH);
     else ors=orientBox(w.oL,w.oW,w.oH, allowRot); // 长方体与组合件均按外接长方体（包络）排布
-    const cand=candidatePoints(placed,c);
+    const cand=candidatePoints(placed,c,minDim);
     let best=null, bestScore=Infinity;
     for(const pt of cand){
       for(const o of ors){
@@ -1859,7 +2008,8 @@ window.addEventListener('resize',render);
 
 // ---------- 工程文件：自动保存 / 导入 / 导出 ----------
 const PROJ_KEY='containerSim_v1';
-function saveState(){
+let _saveTimer=null;
+function saveStateImmediate(){
   try{
     const st={ v:1, groups, items, curSpec, FREIGHT,
       loadFactor:(+document.getElementById('loadFactor').value||0.82), dimUnit,
@@ -1867,6 +2017,50 @@ function saveState(){
     localStorage.setItem(PROJ_KEY, JSON.stringify(st));
   }catch(_){}
 }
+function saveState(){
+  if(_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(()=>{ _saveTimer=null; saveStateImmediate(); }, 500);
+}
+// ---------- 撤销/重做 ----------
+let _history=[], _histIdx=-1;
+const _HIST_MAX=50;
+function _deepClone(o){ return JSON.parse(JSON.stringify(o)); }
+function saveHistory(){
+  try{
+    const snap={ items:_deepClone(items), groups:_deepClone(groups), curSpec, FREIGHT:_deepClone(FREIGHT), dimUnit, planned, selId };
+    _history=_history.slice(0,_histIdx+1);
+    _history.push(snap);
+    if(_history.length>_HIST_MAX) _history.shift();
+    _histIdx=_history.length-1;
+  }catch(_){}
+}
+function undo(){
+  if(_histIdx<=0) return;
+  _histIdx--;
+  _restoreState(_history[_histIdx]);
+}
+function redo(){
+  if(_histIdx>=_history.length-1) return;
+  _histIdx++;
+  _restoreState(_history[_histIdx]);
+}
+function _restoreState(s){
+  items=_deepClone(s.items); groups=_deepClone(s.groups); curSpec=s.curSpec;
+  FREIGHT=_deepClone(s.FREIGHT); dimUnit=s.dimUnit; planned=s.planned; selId=s.selId;
+  const du=document.getElementById('dimUnit'); if(du) du.value=dimUnit;
+  const ss=document.getElementById('specSel'); if(ss) ss.value=curSpec;
+  buildFreightUI(); render();
+}
+window.addEventListener('keydown',e=>{
+  const tag=(e.target.tagName||'').toLowerCase();
+  if(tag==='input'||tag==='textarea'||tag==='select') return;
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){ e.preventDefault(); undo(); }
+  else if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){ e.preventDefault(); redo(); }
+});
+// 输入框连续编辑只保存一次历史（失焦后重置）
+let _histInputLock=false;
+function _saveHistOnInput(){ if(!_histInputLock){ saveHistory(); _histInputLock=true; } }
+document.addEventListener('focusout',e=>{ if(e.target&&e.target.tagName==='INPUT') _histInputLock=false; });
 function applyOrthoState(){
   document.getElementById('orthoWrap').classList.toggle('collapsed',!orthoVisible);
   document.getElementById('orthoTab').textContent=orthoVisible?'收起':'三视图';
@@ -1910,18 +2104,20 @@ document.getElementById('projFile').addEventListener('change',e=>{
     if(st.dimUnit){ dimUnit=st.dimUnit; document.getElementById('dimUnit').value=dimUnit; }
     if(st.loadFactor) document.getElementById('loadFactor').value=st.loadFactor;
     if(typeof st.rotChk==='boolean') document.getElementById('rotChk').checked=st.rotChk;
-    _fixUid(); buildFreightUI(); saveState(); render();
+    _fixUid(); buildFreightUI(); saveHistory(); saveState(); render();
   }catch(err){ alert('导入失败：'+(err&&err.message||err)); } };
   fr.readAsText(f); e.target.value='';
 });
 document.getElementById('projReset').onclick=()=>{
   if(!confirm('确定清空当前所有货物与方案？此操作不可撤销。')) return;
+  saveHistory();
   groups=[]; items=[]; selId=null; planned=false;
   try{ localStorage.removeItem(PROJ_KEY); }catch(_){}
   seedExample(); render();
 };
 // 启动：有存档则恢复，否则放入示例
 if(!loadState()){ seedExample(); applyOrthoState(); }
+saveHistory();
 saveState();
 render();
 </script>
