@@ -42,6 +42,12 @@
   .cargolist{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto;}
   .citem{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;background:#fff;border:1px solid var(--line);cursor:pointer;}
   .citem.sel{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,107,255,.15);}
+  .addrow{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap;margin:2px 0 10px;padding:8px 10px;background:var(--soft);border:1px solid var(--line);border-radius:9px;}
+  .addrow label{display:flex;flex-direction:column;gap:2px;font-size:10px;color:var(--sub);}
+  .addrow .inp.xs{width:52px;height:30px;border:1px solid var(--line);border-radius:7px;padding:0 6px;font-size:13px;text-align:right;background:#fff;color:var(--ink);}
+  .addrow .unit{font-size:11px;color:var(--sub);padding-bottom:7px;}
+  .btn-add{height:30px;padding:0 14px;border:none;border-radius:7px;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;margin-left:auto;}
+  .btn-add:hover{background:var(--blue-d);}
   .cdot{width:12px;height:12px;border-radius:4px;flex-shrink:0;}
   .cinfo{flex:1;min-width:0;}
   .cinfo .nm{font-size:13px;font-weight:600;}
@@ -63,8 +69,12 @@
   .btn-line{width:100%;height:40px;border-radius:9px;background:#fff;border:1px solid var(--line);color:var(--ink);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
   .btn-line:hover{background:var(--soft);}
   .viewport{flex:1;display:flex;flex-direction:row;background:radial-gradient(circle at 50% 42%,#1B2B47,#0B1220);overflow:hidden;min-width:0;}
-  .view3d{flex:1.55;position:relative;min-width:0;border-right:1px solid rgba(255,255,255,.1);}
-  .orthocol{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .view3d{flex:3.5;position:relative;min-width:0;border-right:1px solid rgba(255,255,255,.1);}
+  .ortho-wrap{display:flex;flex-direction:row;align-items:stretch;position:relative;transition:all .28s ease;}
+  .ortho-tab{width:28px;display:flex;align-items:center;justify-content:center;background:rgba(11,18,32,.92);border-left:1px solid rgba(255,255,255,.1);color:#9FB0CC;font-size:12px;writing-mode:vertical-rl;letter-spacing:2px;cursor:pointer;user-select:none;transition:background .2s,color .2s;}
+  .ortho-tab:hover{background:rgba(20,32,56,.98);color:#fff;}
+  .orthocol{width:260px;display:flex;flex-direction:column;min-width:0;opacity:1;transition:width .28s ease,opacity .22s ease;}
+  .ortho-wrap.collapsed .orthocol{width:0;opacity:0;overflow:hidden;}
   .ortho{flex:1;position:relative;border-bottom:1px solid rgba(255,255,255,.1);min-width:0;background:rgba(9,16,30,.4);overflow:hidden;}
   .ortho:last-child{border-bottom:none;}
   canvas{display:block;width:100%;height:100%;}
@@ -122,6 +132,67 @@
   .pe-grid select,.pe-grid input{width:100%;padding:6px 4px;border:1px solid var(--line);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;color:var(--ink);min-width:0;}
   .pe-type-row{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
   .pe-type-row select{flex:1;}
+  /* 装柜动画 / 视频 */
+  .loadbar{position:absolute;left:50%;top:18px;transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:7px 14px;border-radius:20px;background:rgba(13,27,52,.72);color:#fff;font-size:13px;font-weight:600;backdrop-filter:blur(4px);z-index:5;}
+  .loadbar .lp{width:120px;height:6px;border-radius:3px;background:rgba(255,255,255,.22);overflow:hidden;}
+  .loadbar .lp i{display:block;height:100%;width:0;background:linear-gradient(90deg,#5BE0FF,#1E54E0);transition:width .08s linear;}
+  .btn-row{display:flex;gap:8px;}
+  .btn-row .btn-line{flex:1;font-size:13px;}
+  #videoCard{display:none;}
+  .vwrap{width:100%;border-radius:10px;overflow:hidden;background:#0D1B34;margin-top:10px;}
+  .vwrap video{width:100%;display:block;background:#000;}
+  .vtools{display:flex;gap:8px;margin-top:10px;}
+  .vtools a,.vtools button{flex:1;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;}
+  .vdl{background:var(--blue);color:#fff;}
+  .vagain{background:#fff;color:var(--ink);border-color:var(--line);}
+  /* 装箱单导入 */
+  .pltab{display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto;}
+  .plrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:#fff;border:1px solid var(--line);}
+  .plrow .pln{flex:1;min-width:0;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .plrow .pld{font-size:11px;color:var(--sub);white-space:nowrap;}
+  .plrow .plq{font-size:11px;color:var(--blue);font-weight:600;white-space:nowrap;}
+  .plmsg{font-size:12px;line-height:1.5;}
+  .plmsg.err{color:var(--red);}
+  .plmsg.ok{color:var(--ok);}
+  .co-tbl{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .co-h{display:grid;grid-template-columns:1fr 110px;font-size:11px;color:var(--sub);background:var(--soft);padding:7px 8px;font-weight:600;}
+  .co-row{display:grid;grid-template-columns:1fr 110px;align-items:center;font-size:12px;padding:4px 8px;border-top:1px solid var(--line);background:#fff;}
+  .co-row .nm{font-weight:600;color:var(--ink);}
+  .co-row .nm small{display:block;font-weight:400;color:var(--sub);font-size:10px;margin-top:1px;}
+  .co-row .vl{color:var(--sub);}
+  .co-row input{width:100%;height:30px;border:1px solid var(--line);border-radius:7px;padding:0 8px;font-size:13px;text-align:right;background:#fff;color:var(--ink);}
+  .co-sum{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--ink);line-height:1.75;}
+  .co-sum b{color:var(--blue);}
+  .co-plan{display:flex;flex-direction:column;gap:8px;}
+  .co-line{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;}
+  .co-line .ct{font-weight:700;font-size:14px;color:var(--ink);}
+  .co-line .csub{font-size:11px;color:var(--sub);margin-top:2px;}
+  .co-line .cpr{font-weight:700;font-size:15px;color:var(--blue);}
+  .co-total{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:9px;background:linear-gradient(90deg,rgba(47,107,255,.10),rgba(47,107,255,.02));border:1px solid rgba(47,107,255,.25);}
+  .co-total .t1{font-size:13px;color:var(--sub);}
+  .co-total .t2{font-size:18px;font-weight:800;color:var(--blue);}
+  /* 逐柜明细 */
+  .co-detail{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+  .co-det{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff;}
+  .co-det-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;background:linear-gradient(90deg,rgba(47,107,255,.08),rgba(47,107,255,.02));cursor:pointer;}
+  .co-det-head .t{font-weight:700;font-size:14px;color:var(--ink);}
+  .co-det-head .t small{font-weight:500;color:var(--sub);margin-left:4px;}
+  .co-det-head .m{font-size:12px;color:var(--sub);}
+  .co-det-head .m b{color:var(--blue);}
+  .co-det-body{display:none;padding:10px 12px 12px;}
+  .co-det.open .co-det-body{display:block;}
+  .co-mini{width:100%;height:172px;background:radial-gradient(circle at 50% 38%,#10203f,#0a1426);border-radius:9px;border:1px solid var(--line);}
+  .co-manifest{margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden;font-size:12.5px;}
+  .co-manifest .mh,.co-manifest .mr{display:grid;grid-template-columns:1fr 92px 56px 64px;gap:6px;padding:6px 10px;align-items:center;}
+  .co-manifest .mh{background:var(--soft);color:var(--sub);font-weight:600;border-bottom:1px solid var(--line);}
+  .co-manifest .mr{border-bottom:1px solid var(--line);color:var(--ink);}
+  .co-manifest .mr:last-child{border-bottom:none;}
+  .co-manifest .mr .nm2{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .co-manifest .mr .dim{color:var(--sub);}
+  .co-det-ft{display:flex;justify-content:space-between;align-items:center;margin-top:9px;gap:10px;flex-wrap:wrap;}
+  .co-view{border:none;background:var(--blue);color:#fff;font-weight:700;font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;}
+  .co-view:hover{filter:brightness(1.07);}
+  .co-warn{margin-top:8px;font-size:12.5px;color:#B45309;background:rgba(255,196,92,.14);border:1px solid rgba(255,196,92,.4);border-radius:8px;padding:8px 10px;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -143,18 +214,53 @@
       <div class="card">
         <h3>集装箱规格</h3>
         <select id="specSel">
-          <option value="20GP">20尺标准柜 · 5.90×2.35×2.39 m</option>
-          <option value="40GP" selected>40尺标准柜 · 12.03×2.35×2.39 m</option>
-          <option value="40HC">40尺高柜 · 12.03×2.35×2.69 m</option>
-          <option value="45HC">45尺高柜 · 13.56×2.35×2.69 m</option>
+          <option value="20GP">20尺标准柜 · 5.93×2.34×2.38 m</option>
+          <option value="40GP" selected>40尺标准柜 · 12.04×2.34×2.38 m</option>
+          <option value="40HC">40尺高柜 · 12.06×2.35×2.69 m</option>
+          <option value="45HC">45尺高柜 · 13.58×2.35×2.70 m</option>
+          <option value="20RF">20尺冷藏柜 · 5.44×2.29×2.27 m</option>
+          <option value="40RF">40尺冷藏柜 · 11.58×2.29×2.21 m</option>
+          <option value="40RH">40尺冷藏高柜 · 11.58×2.29×2.51 m</option>
+          <option value="45RH">45尺冷藏高柜 · 13.10×2.29×2.51 m</option>
         </select>
-        <div class="muted" id="specInfo">内部容积 67.7 m³</div>
+        <div class="muted" id="specInfo">内部容积 66.9 m³</div>
       </div>
 
       <div class="card">
         <h3>货物清单 <span class="add" id="addCargo">+ 添加</span></h3>
+        <div class="addrow">
+          <label>长(m)<input class="inp xs" id="addL" type="number" value="1.2" step="0.1" min="0.1"></label>
+          <label>宽(m)<input class="inp xs" id="addW" type="number" value="1.0" step="0.1" min="0.1"></label>
+          <label>高(m)<input class="inp xs" id="addH" type="number" value="1.0" step="0.1" min="0.1"></label>
+          <button class="btn-add" id="addBtn">添加</button>
+        </div>
         <div class="cargolist" id="cargoList"></div>
         <div class="muted">列出所有要装柜的货物（长方体 / 圆柱体 / 组合件），可在 3D 视图中拖动单件摆放；点「生成最优装柜计划」由算法自动求最优排布。组合件可由多个基本形状拼合而成，整体按外接长方体（包络）参与排布与校验。</div>
+      </div>
+
+      <div class="card" id="plCard">
+        <h3>从装箱单导入 <span class="add" id="plPick">选择文件</span></h3>
+        <input type="file" id="plFile" accept=".csv,.tsv,.txt,.xlsx,.xls" style="display:none">
+        <div class="muted">上传 Excel(.xlsx)/CSV/TSV/TXT 装箱单（PACKING LIST）。自动识别表头（长/宽/高/数量/名称/尺寸），并换算单位（cm·mm·inch→m）。PDF 或图片请先导出为 CSV / Excel 再导入。</div>
+        <div id="plMsg" class="plmsg" style="display:none"></div>
+        <div id="plPreview" style="display:none;flex-direction:column;gap:10px;">
+          <div class="row" style="gap:8px;align-items:center">
+            <label style="font-size:13px;color:var(--sub);white-space:nowrap">单位换算</label>
+            <select id="plUnit" class="inp" style="width:auto;flex:1">
+              <option value="auto">自动识别</option>
+              <option value="1">米 m</option>
+              <option value="0.01">厘米 cm</option>
+              <option value="0.001">毫米 mm</option>
+              <option value="0.0254">英寸 inch</option>
+            </select>
+          </div>
+          <div id="plTable" class="pltab"></div>
+          <div class="muted" id="plCount"></div>
+          <div class="btn-row">
+            <button class="btn-line" id="plCancel">重新选择</button>
+            <button class="btn-primary" id="plImport" style="height:40px;font-size:14px">导入货物</button>
+          </div>
+        </div>
       </div>
 
       <div class="card" id="inspector">
@@ -164,15 +270,28 @@
           <div class="chip" data-shape="cyl" id="chipCyl">圆柱体</div>
           <div class="chip" data-shape="composite" id="chipComposite">组合件</div>
         </div>
-        <div class="dim3">
-          <div class="fld"><input class="inp" id="inL" type="number" value="1.2" step="0.1" min="0.1"><span>长 L (m)</span></div>
-          <div class="fld"><input class="inp" id="inW" type="number" value="1.0" step="0.1" min="0.1"><span>宽 W (m)</span></div>
-          <div class="fld"><input class="inp" id="inH" type="number" value="1.0" step="0.1" min="0.1"><span>高 H (m)</span></div>
+        <div class="row" style="gap:8px;align-items:center;margin-bottom:2px">
+          <label style="font-size:13px;color:var(--sub);white-space:nowrap">尺寸单位</label>
+          <select class="inp" id="dimUnit" style="width:auto;flex:1;padding:6px 8px">
+            <option value="cm" selected>厘米 cm</option>
+            <option value="m">米 m</option>
+            <option value="mm">毫米 mm</option>
+          </select>
         </div>
+        <div class="dim3">
+          <div class="fld"><input class="inp" id="inL" type="number" value="120" step="1" min="0.1"><span>长 L</span></div>
+          <div class="fld"><input class="inp" id="inW" type="number" value="100" step="1" min="0.1"><span>宽 W</span></div>
+          <div class="fld"><input class="inp" id="inH" type="number" value="100" step="1" min="0.1"><span>高 H</span></div>
+        </div>
+        <div class="fld" style="margin-top:8px"><input class="inp" id="inWt" type="number" value="0" step="1" min="0" style="width:100%"><span>单件重量 (kg)</span></div>
         <div id="partsEditor" style="display:none;flex-direction:column;gap:10px;">
           <div class="pe-head">组合件构成 <span class="add" id="peAdd">+ 子形状</span></div>
+          <div style="display:flex;gap:8px;">
+            <div style="flex:1"><div class="muted" style="margin-bottom:4px">俯视（长×宽）</div><canvas id="pePrevTop" width="180" height="120" style="width:100%;height:120px;background:#0E1A30;border-radius:8px;border:1px solid rgba(120,150,210,.25)"></canvas></div>
+            <div style="flex:1"><div class="muted" style="margin-bottom:4px">正视（长×高）</div><canvas id="pePrevFront" width="180" height="120" style="width:100%;height:120px;background:#0E1A30;border-radius:8px;border:1px solid rgba(120,150,210,.25)"></canvas></div>
+          </div>
           <div id="peList" style="display:flex;flex-direction:column;gap:10px;"></div>
-          <div class="muted">每个子形状设尺寸与在组合体内部的局部偏移（贴地角相对组合体原点，单位 m）。组合体整体按各子形状外接长方体（包络）参与装柜与堆叠校验。</div>
+          <div class="muted">每个子形状设尺寸与在组合体内部的局部偏移（贴地角相对组合体原点，尺寸单位与上方「尺寸单位」一致）。组合体整体按各子形状外接长方体（包络）参与装柜与堆叠校验。</div>
         </div>
         <div class="row">
           <label>数量</label>
@@ -189,9 +308,9 @@
         </div>
         <div class="muted" style="margin-top:-4px">开启后，可被放到其它货物上方叠高。</div>
         <div class="dim3">
-          <div class="fld"><input class="inp" id="inX" type="number" value="0.5" step="0.1" min="0"><span>位置 X</span></div>
-          <div class="fld"><input class="inp" id="inY" type="number" value="0" step="0.1" min="0"><span>位置 Y (高)</span></div>
-          <div class="fld"><input class="inp" id="inZ" type="number" value="0.5" step="0.1" min="0"><span>位置 Z</span></div>
+          <div class="fld"><input class="inp" id="inX" type="number" value="50" step="1" min="0"><span>位置 X</span></div>
+          <div class="fld"><input class="inp" id="inY" type="number" value="0" step="1" min="0"><span>位置 Y (高)</span></div>
+          <div class="fld"><input class="inp" id="inZ" type="number" value="50" step="1" min="0"><span>位置 Z</span></div>
         </div>
         <div class="row" style="gap:8px">
           <button class="btn-line" id="dupBtn" style="flex:1">复制</button>
@@ -207,6 +326,42 @@
           生成最优装柜计划
         </button>
         <button class="btn-line" id="manualBtn">恢复手动摆放</button>
+        <div class="btn-row" style="margin-top:10px">
+          <button class="btn-line" id="playBtn">▶ 播放装柜动画</button>
+          <button class="btn-line" id="recBtn">🎬 生成装柜视频</button>
+        </div>
+      </div>
+
+      <div class="card" id="costCard">
+        <h3>装柜成本最优方案 <span class="add" id="costRun">生成方案</span></h3>
+        <div class="muted">汇总当前所有货物的件数与尺寸，结合各集装箱运输成本，自动求解「用哪种柜、各用几柜」的成本最低组合。</div>
+        <div class="co-tbl">
+          <div class="co-h"><span>集装箱</span><span>运输成本 ¥</span></div>
+          <div id="freightRows"></div>
+        </div>
+        <div class="row" style="gap:8px;align-items:center">
+          <label style="font-size:13px;color:var(--sub);white-space:nowrap">预计装载率</label>
+          <input class="inp" id="loadFactor" type="number" value="0.82" step="0.01" min="0.3" max="0.98" style="width:74px">
+          <span style="font-size:12px;color:var(--sub)">（0.3–0.98）</span>
+        </div>
+        <div id="costMsg" class="plmsg" style="display:none"></div>
+        <div id="costResult" style="display:none;flex-direction:column;gap:10px;margin-top:2px">
+          <div class="co-sum" id="costSum"></div>
+          <div class="co-plan" id="costPlan"></div>
+          <div class="co-detail" id="costDetail"></div>
+          <div class="muted" id="costNote"></div>
+        </div>
+      </div>
+
+      <div class="card" id="projCard">
+        <h3>工程文件 <span class="add" id="projSave">自动保存</span></h3>
+        <div class="muted">货物与方案会自动保存在本机浏览器（刷新不丢）；可导出为文件发给同事，或导入继续编辑。</div>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn-line" id="projExport">⬇ 导出工程</button>
+          <button class="btn-line" id="projImportBtn">⬆ 导入工程</button>
+        </div>
+        <input type="file" id="projFile" accept=".json" style="display:none">
+        <button class="btn-line" id="projReset" style="margin-top:8px;color:var(--red);border-color:#F6C9CA">清空并重置</button>
       </div>
     </aside>
 
@@ -215,13 +370,14 @@
       <div class="view3d" id="view3d">
         <canvas id="cv"></canvas>
         <div class="badge tl"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" stroke="#9FB0CC" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 7.5l8 4.5 8-4.5M12 12v9" stroke="#9FB0CC" stroke-width="1.6" stroke-linejoin="round"/></svg> 立体透视</div>
-        <div class="badge tr" id="viewMode">等轴测投影</div>
+        <div class="badge tr" id="viewMode">透视 3D · 可拖动</div>
         <div class="tools">
           <div class="tool" id="zIn" title="放大"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#C7D2E5" stroke-width="2" stroke-linecap="round"/></svg></div>
           <div class="tool" id="zOut" title="缩小"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="#C7D2E5" stroke-width="2" stroke-linecap="round"/></svg></div>
-          <div class="tool" id="rot" title="旋转视角"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round"/><path d="M17 3v4h-4" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12a8 8 0 0 1-13.7 5.6" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 21v-4h4" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="tool" id="rot" title="自动旋转（3D 动画）"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round"/><path d="M17 3v4h-4" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12a8 8 0 0 1-13.7 5.6" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round"/><path d="M7 21v-4h4" stroke="#C7D2E5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <div class="tool" id="seeThru" title="透视看穿柜壁"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="#C7D2E5" stroke-width="1.6"/><circle cx="12" cy="12" r="2.6" stroke="#C7D2E5" stroke-width="1.6"/></svg></div>
           <div class="tool" id="clear" title="清空货物"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13" stroke="#C7D2E5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="tool exitpv" id="exitPreview" title="退出柜内预览，返回货物全景" style="display:none">返回</div>
         </div>
         <div class="legend">
           <div class="li"><span class="ld" style="background:#F7B733"></span>长方体</div>
@@ -229,12 +385,17 @@
           <div class="li"><span class="ld" style="background:repeating-linear-gradient(45deg,#9B8CFF,#9B8CFF 3px,transparent 3px,transparent 6px)"></span>组合件</div>
           <div class="li"><span class="ld" style="background:#5BE0FF"></span>已选中</div>
           <div class="li"><span class="ld" style="border:2px dashed #FFC45C;background:transparent"></span>堆叠接缝</div>
+          <div class="li"><span class="ld" style="background:#FF9F43"></span>柜门 Door</div>
         </div>
+        <div class="loadbar" id="loadBar"><span id="loadTxt">装柜中</span><span class="lp"><i id="loadFill"></i></span></div>
       </div>
-      <div class="orthocol">
-        <div class="ortho" id="viewTop"><canvas id="cvTop"></canvas><div class="vlabel">俯视图 · <b>Top</b></div></div>
-        <div class="ortho" id="viewFront"><canvas id="cvFront"></canvas><div class="vlabel">正视图 · <b>Front</b></div></div>
-        <div class="ortho" id="viewRight"><canvas id="cvRight"></canvas><div class="vlabel">右视图 · <b>Right</b></div></div>
+      <div class="ortho-wrap collapsed" id="orthoWrap">
+        <div class="ortho-tab" id="orthoTab" title="展开三视图">三视图</div>
+        <div class="orthocol" id="orthoCol">
+          <div class="ortho" id="viewTop"><canvas id="cvTop"></canvas><div class="vlabel">俯视图 · <b>Top</b></div></div>
+          <div class="ortho" id="viewFront"><canvas id="cvFront"></canvas><div class="vlabel">正视图 · <b>Front</b></div></div>
+          <div class="ortho" id="viewRight"><canvas id="cvRight"></canvas><div class="vlabel">右视图 · <b>Right</b></div></div>
+        </div>
       </div>
     </div>
 
@@ -269,9 +430,19 @@
         <div id="chkList" style="display:flex;flex-direction:column;gap:10px"></div>
       </div>
 
+      <div class="card" id="videoCard">
+        <h3>装柜视频</h3>
+        <div class="muted">点「生成装柜视频」后，这里会出现动画预览与下载链接（WebM 格式，浏览器原生录制，可直接观看 / 下载）。</div>
+        <div class="vwrap"><video id="vidPrev" controls playsinline></video></div>
+        <div class="vtools">
+          <a class="vdl" id="vidDl" download="装柜方案.webm" href="#">⬇ 下载视频</a>
+          <button class="vagain" id="vidAgain">重新生成</button>
+        </div>
+      </div>
+
       <div class="card">
         <h3>操作提示</h3>
-        <div class="tip blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E54E0" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="#1E54E0" stroke-width="1.8" stroke-linecap="round"/></svg><span>左侧为主 3D 透视，右侧同步显示俯视 / 正视 / 右视三视图——四个角度一起看，装货程度最清晰。<b>四个视图均可直接拖动货物调整位置，且任意一处改动都会实时联动刷新其他三视图</b>：3D 与俯视图拖动改底面 X/Z，正视图拖动改 X/层高，右视图拖动改 Z/层高；开启「可堆叠」后在 3D 或俯视图拖到上方会自动叠高。位置 X/Y/Z 也可精确定位；点「透视」可看穿柜壁看清内部堆叠。堆叠接触处橙色虚线标接缝，生成计划后可用「恢复手动摆放」继续微调。</span></div>
+        <div class="tip blue"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1E54E0" stroke-width="1.8"/><path d="M12 11v5M12 8h.01" stroke="#1E54E0" stroke-width="1.8" stroke-linecap="round"/></svg><span>左侧为主 3D 透视，右侧同步显示俯视 / 正视 / 右视三视图——四个角度一起看，装货程度最清晰。<b>四个视图均可直接拖动货物调整位置，且任意一处改动都会实时联动刷新其他三视图</b>：3D 与俯视图拖动改底面 X/Z，正视图拖动改 X/层高，右视图拖动改 Z/层高；开启「可堆叠」后在 3D 或俯视图拖到上方会自动叠高。位置 X/Y/Z 也可精确定位；点「透视」可看穿柜壁看清内部堆叠。堆叠接触处橙色虚线标接缝，生成计划后可用「恢复手动摆放」继续微调。<b>装柜动画与视频按「物理可达顺序」演示：从柜门对侧逐列、由下往上装，支撑件先于其上层装入，确保每件都能实际装进柜、不会出现“底层排满后上层够不着”的情况。</b></span></div>
       </div>
     </div>
   </div>
@@ -280,10 +451,14 @@
 <script>
 // ---------- data ----------
 const CONTAINERS = {
-  '20GP':{name:'20尺标准柜', L:5.90, W:2.35, H:2.39, vol:33.2},
-  '40GP':{name:'40尺标准柜', L:12.03, W:2.35, H:2.39, vol:67.7},
-  '40HC':{name:'40尺高柜', L:12.03, W:2.35, H:2.69, vol:76.4},
-  '45HC':{name:'45尺高柜', L:13.56, W:2.35, H:2.69, vol:85.7},
+  '20GP':{name:'20尺标准柜', L:5.925, W:2.340, H:2.379, vol:33.0, payload:22.1},
+  '40GP':{name:'40尺标准柜', L:12.043, W:2.336, H:2.379, vol:66.9, payload:27.4},
+  '40HC':{name:'40尺高柜', L:12.055, W:2.345, H:2.685, vol:75.9, payload:29.6},
+  '45HC':{name:'45尺高柜', L:13.580, W:2.347, H:2.696, vol:86.0, payload:28.7},
+  '20RF':{name:'20尺冷藏柜', L:5.440, W:2.294, H:2.273, vol:28.4, payload:24.25},
+  '40RF':{name:'40尺冷藏柜', L:11.577, W:2.294, H:2.210, vol:58.7, payload:28.55},
+  '40RH':{name:'40尺冷藏高柜', L:11.577, W:2.294, H:2.509, vol:66.6, payload:28.35},
+  '45RH':{name:'45尺冷藏高柜', L:13.102, W:2.286, H:2.509, vol:75.2, payload:27.3},
 };
 const PALETTE = ['hsl(40,92%,58%)','hsl(168,70%,46%)','hsl(250,78%,72%)','hsl(212,85%,64%)','hsl(145,65%,52%)','hsl(20,85%,60%)'];
 let paletteIdx = 0;
@@ -291,14 +466,27 @@ let curSpec = '40GP';
 let items = [];          // flat list of cargo instances (each row in plan)
 let groups = [];         // group metadata: {id, name, shape, oL,oW,oH, stack, color}
 let selId = null;
-let yaw = 0;
-let zoom = 1;
+let yaw = 0.6;
+let zoom = 1.15;
 let uid = 1;
 let planned = false;
+let loadSeq = [];       // 装柜动画顺序（物理可达：支撑先装 + 柜门对侧逐列由下往上）
+let loadT = 1;          // 加载进度 0..1
+let animRAF = null;      // 动画帧句柄
+let doorAngle = 0;      // 柜门开合角（0=关闭，DOOR_OPEN=全开）；仅装柜动画中改变，静态渲染强制为 0
+const DOOR_OPEN = 2.0;  // 开门角度（弧度，约 115°）
+const easeOut = t => 1 - Math.pow(1-t, 2);
 
-function addGroup(shape, L, W, H, stack){
+// 尺寸录入单位（米/厘米/毫米）：内部统一以米存储，录入与展示按 dimUnit 换算
+let dimUnit='cm';
+function unitFactor(u){ return u==='mm'?0.001 : u==='cm'?0.01 : 1; }
+function toM(v){ return (+v||0)*unitFactor(dimUnit); }
+function fromM(v){ const f=unitFactor(dimUnit); return f? (+v||0)/f : (+v||0); }
+function unitName(u){ return u==='mm'?'毫米 mm': u==='cm'?'厘米 cm':'米 m'; }
+
+function addGroup(shape, L, W, H, stack, weight){
   const g = { id:'g'+(uid++), name:'货物 #'+(groups.length+1), shape:shape||'box',
-    oL:L||1.2, oW:W||1.0, oH:H||1.0, stack:stack!==false, color:PALETTE[groups.length % PALETTE.length], parts:null };
+    oL:L||1.2, oW:W||1.0, oH:H||1.0, stack:stack!==false, color:PALETTE[groups.length % PALETTE.length], parts:null, weight: weight||0 };
   groups.push(g);
   addInstance(g);
   return g;
@@ -307,7 +495,7 @@ function addInstance(g){
   const it = { id:uid++, groupId:g.id, shape:g.shape,
     oL:g.oL, oW:g.oW, oH:g.oH, L:g.oL, W:g.oW, H:g.oH,
     x:0.3, y:0, z:0.3, stack:g.stack, color:g.color, overflow:false,
-    parts: (g.shape==='composite' && g.parts)? cloneParts(g.parts): null };
+    parts: (g.shape==='composite' && g.parts)? cloneParts(g.parts): null, weight:g.weight||0 };
   items.push(it);
   return it;
 }
@@ -323,8 +511,7 @@ function syncComposite(g){
   const e=envOf(g.parts); g.oL=e.L; g.oW=e.W; g.oH=e.H;
 }
 // seed example
-addGroup('box',1.2,1.0,1.0,true);
-addGroup('cyl',1.0,1.0,1.4,false);
+function seedExample(){ addGroup('box',1.2,1.0,1.0,true); addGroup('cyl',1.0,1.0,1.4,false); }
 // 组合件示例：底座 + 上方偏移小箱体（类似 L/T 形异形货）
 const _cgrp = addGroup('composite',1.3,1.1,1.2,true);
 _cgrp.parts = [
@@ -335,85 +522,124 @@ syncComposite(_cgrp);
 applyGroupDims(_cgrp);
 selId = items[0].id;
 
-// ---------- projection ----------
-const K = Math.cos(Math.PI/6), M = Math.sin(Math.PI/6);
-let scale = 34, ox = 0, oy = 0;
-function rot2(x,z){
-  const cx=CONTAINERS[curSpec].L/2, cz=CONTAINERS[curSpec].W/2;
-  let dx=x-cx, dz=z-cz;
-  if(yaw===0) return [cx+dx, cz+dz];
-  if(yaw===1) return [cx-dz, cz+dx];
-  if(yaw===2) return [cx-dx, cz-dz];
-  return [cx+dz, cz-dx];
+// ---------- projection (透视 3D · 可拖动旋转轨道) ----------
+let pitch = -0.5;        // 俯仰角（连续弧度）；上下拖动旋转
+let camDist = 30;        // 相机距离（fitView 按柜型设定）
+let focal = 600;         // 焦距（fitView 按画布尺寸设定）
+let cxScreen = 300, cyScreen = 200;
+let autoRotate = false;  // 自动旋转（3D 动画）
+let autoRAF = null;      // 自动旋转帧句柄
+const CAM_K = 1.45;      // 相机距离系数（柜体空间对角 × 此值）
+function rotCam(px,py,pz){
+  const cy=Math.cos(yaw), sy=Math.sin(yaw);
+  let rx=px*cy+pz*sy, rz=-px*sy+pz*cy, ry=py;
+  const cp=Math.cos(pitch), sp=Math.sin(pitch);
+  return [rx, ry*cp-rz*sp, ry*sp+rz*cp];
 }
+function toCam(x,y,z){ const c=CONTAINERS[curSpec]; return rotCam(x-c.L/2, y-c.H/2, z-c.W/2); }
+function dirToCam(vx,vy,vz){ return rotCam(vx,vy,vz); }
 function project(x,y,z){
-  const [rx,rz]=rot2(x,z);
-  return [ ox + (rx-rz)*K*scale*zoom, oy + (rx+rz)*M*scale*zoom - y*scale*zoom ];
+  const [rx,ry,rz]=toCam(x,y,z);
+  const depth=rz+camDist;
+  const f=focal*zoom/depth;
+  return [ cxScreen+rx*f, cyScreen-ry*f, depth ];
 }
-function fitView(){
+function fitView(canvasEl){
   const c=CONTAINERS[curSpec];
-  let pts=[[0,0,0],[c.L,0,0],[c.L,0,c.W],[0,0,c.W],[0,c.H,0],[c.L,c.H,0],[c.L,c.H,c.W],[0,c.H,c.W]]
-    .map(p=>{const [rx,rz]=rot2(p[0],p[2]); return [(rx-rz)*K, (rx+rz)*M - p[1]];});
-  let minX=Math.min(...pts.map(p=>p[0])), maxX=Math.max(...pts.map(p=>p[0]));
-  let minY=Math.min(...pts.map(p=>p[1])), maxY=Math.max(...pts.map(p=>p[1]));
-  const W=document.getElementById('view3d').clientWidth, H=document.getElementById('view3d').clientHeight;
-  const pad=70;
-  const s=Math.min((W-2*pad)/(maxX-minX),(H-2*pad)/(maxY-minY));
-  scale=s;
-  const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
-  ox=W/2 - cx*scale*zoom;
-  oy=H/2 - cy*scale*zoom;
+  const el = canvasEl || document.getElementById('view3d');
+  const W=el.clientWidth||600, H=el.clientHeight||360;
+  camDist = Math.hypot(c.L,c.H,c.W)*CAM_K + 4;
+  let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+  [[0,0,0],[c.L,0,0],[c.L,0,c.W],[0,0,c.W],[0,c.H,0],[c.L,c.H,0],[c.L,c.H,c.W],[0,c.H,c.W]].forEach(p=>{
+    const [rx,ry]=rotCam(p[0]-c.L/2,p[1]-c.H/2,p[2]-c.W/2);
+    if(rx<minX)minX=rx; if(rx>maxX)maxX=rx; if(ry<minY)minY=ry; if(ry>maxY)maxY=ry;
+  });
+  const pad=18;
+  // 透视投影：屏幕尺寸 = 世界尺寸 * focal * zoom / depth，这里按中心深度 camDist 估算
+  focal = Math.min((W-2*pad)/((maxX-minX)||1), (H-2*pad)/((maxY-minY)||1)) * camDist / zoom;
+  cxScreen=W/2; cyScreen=H/2;
 }
+// 面列表（画家算法：远 → 近）
+let _faces=[];
+function _pushFace(pts, fill, stroke, sw, alpha, z){
+  _faces.push({pts, fill, stroke, sw:sw||1, alpha: alpha==null?1:alpha, z: z||0});
+}
+function flushFaces(){
+  _faces.sort((a,b)=> b.z-a.z);
+  for(const fc of _faces){
+    if(fc.fill){ ctx.beginPath(); fc.pts.forEach((p,k)=> k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.globalAlpha=fc.alpha; ctx.fillStyle=fc.fill; ctx.fill(); ctx.globalAlpha=1; }
+    if(fc.stroke){ ctx.beginPath(); fc.pts.forEach((p,k)=> k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath(); ctx.strokeStyle=fc.stroke; ctx.lineWidth=fc.sw; ctx.stroke(); }
+  }
+}
+function _faceNormal(a,b,c){ const u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]], v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]]; return [u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0]]; }
+// 把法线翻转为朝外（相对形体中心），消除绕组不一致导致的剔除/明暗错误
+function _orientOut(n, cf, ctr){ const dx=cf[0]-ctr[0], dy=cf[1]-ctr[1], dz=cf[2]-ctr[2]; if(n[0]*dx+n[1]*dy+n[2]*dz<0){ n[0]=-n[0]; n[1]=-n[1]; n[2]=-n[2]; } return n; }
+const _LIGHT=[-0.32,0.80,0.50];
+function _brightness(n){ const L=Math.hypot(n[0],n[1],n[2])||1; const d=(n[0]*_LIGHT[0]+n[1]*_LIGHT[1]+n[2]*_LIGHT[2])/L; return Math.max(0.42, Math.min(1.12, 0.5+0.62*d)); }
+function autoTick(){ if(!autoRotate){autoRAF=null;return;} yaw+=0.006; renderMain(1); autoRAF=requestAnimationFrame(autoTick); }
 
 // ---------- drawing ----------
-const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+let cv=document.getElementById('cv'), ctx=cv.getContext('2d');
 const cvTop=document.getElementById('cvTop'), ctxT=cvTop.getContext('2d');
 const cvFront=document.getElementById('cvFront'), ctxF=cvFront.getContext('2d');
 const cvRight=document.getElementById('cvRight'), ctxR=cvRight.getContext('2d');
+let orthoVisible=false; // 三视图面板默认收起，点击右侧标签展开；收起时不渲染三视图以提升性能
 let seeThrough=false;
 function resize(){
-  [ [cv,ctx],[cvTop,ctxT],[cvFront,ctxF],[cvRight,ctxR] ].forEach(([c2,g])=>{
+  cv.width=cv.clientWidth*devicePixelRatio; cv.height=cv.clientHeight*devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  if(!orthoVisible) return;
+  [ [cvTop,ctxT],[cvFront,ctxF],[cvRight,ctxR] ].forEach(([c2,g])=>{
     c2.width=c2.clientWidth*devicePixelRatio; c2.height=c2.clientHeight*devicePixelRatio;
     g.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
   });
 }
 function shade(hsl,f){ const m=hsl.match(/hsl\((\d+),(\d+)%,(\d+)%\)/); const l=Math.max(8,Math.min(92, (+m[3])*f)); return `hsl(${m[1]},${m[2]}%,${l}%)`; }
 
-function boxFaces(it){
-  const {x,y,z,L,W,H}=it;
-  const c=[
-    [x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W],
-    [x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]
-  ].map(p=>project(p[0],p[1],p[2]));
-  const f=[
-    {i:[4,5,6,7], n:'top', d:1.0},
-    {i:[1,2,6,5], n:'x+', d:0.82},
-    {i:[3,2,6,7], n:'z+', d:0.66},
-    {i:[0,1,5,4], n:'x-', d:0.55},
-    {i:[0,3,7,4], n:'z-', d:0.55},
-  ];
-  f.forEach(face=>{ face.avg=face.i.reduce((s,idx)=>s+c[idx][0],0)/4; face.poly=c; });
-  return f.sort((a,b)=>a.avg-b.avg);
+function _boxFaces(x,y,z,L,W,H, color, overflow){
+  const col= overflow? 'hsl(0,80%,60%)' : color;
+  const C=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W],[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]];
+  const ctr=[x+L/2, y+H/2, z+W/2];
+  const F=[{i:[4,5,6,7]},{i:[1,2,6,5]},{i:[3,2,6,7]},{i:[0,1,5,4]},{i:[0,3,7,4]},{i:[0,1,2,3]}];
+  for(const f of F){
+    const a=C[f.i[0]], b=C[f.i[1]], c=C[f.i[2]];
+    const cf=[(C[f.i[0]][0]+C[f.i[1]][0]+C[f.i[2]][0]+C[f.i[3]][0])/4,(C[f.i[0]][1]+C[f.i[1]][1]+C[f.i[2]][1]+C[f.i[3]][1])/4,(C[f.i[0]][2]+C[f.i[1]][2]+C[f.i[2]][2]+C[f.i[3]][2])/4];
+    let n=_orientOut(_faceNormal(a,b,c), cf, ctr);
+    const nc=dirToCam(n[0],n[1],n[2]);
+    if(nc[2] >= -0.0001) continue; // 背面剔除（法线已朝外，保留朝向相机 -z 的面）
+    const pts=f.i.map(k=>project(C[k][0],C[k][1],C[k][2]));
+    const z=pts.reduce((s,p)=>s+p[2],0)/4;
+    _pushFace(pts, shade(col,_brightness(n)), 'rgba(13,27,52,.42)', 1, seeThrough?0.92:1, z);
+  }
 }
-function layerFactor(y){ const c=CONTAINERS[curSpec]; return 1 + (y/c.H)*0.16; } // 越高越亮，堆叠成阶梯
-function drawBoxPrim(o, it){
-  const s={x:it.x,y:it.y,z:it.z,L:it.L,W:it.W,H:it.H};
-  it.x=o.x; it.y=o.y; it.z=o.z; it.L=o.L; it.W=o.W; it.H=o.H;
-  const faces=boxFaces(it);
-  const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
-  const lf=layerFactor(it.y);
-  faces.forEach(face=>{
-    if(face.n==='bottom') return;
-    ctx.beginPath();
-    face.i.forEach((idx,k)=>{ const p=face.poly[idx]; k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); });
-    ctx.closePath();
-    ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,face.d*lf); ctx.fill(); ctx.globalAlpha=1;
-    ctx.strokeStyle='rgba(13,27,52,.38)'; ctx.lineWidth=1.1; ctx.stroke();
+function _cylFaces(x,y,z,L,W,H, color, overflow){
+  const col= overflow? 'hsl(0,80%,60%)' : color;
+  const cx=x+L/2, cz=z+W/2, r=Math.min(L,W)/2, N=16;
+  const ring=[]; for(let i=0;i<N;i++){ const a=i/N*Math.PI*2; ring.push([cx+Math.cos(a)*r, cz+Math.sin(a)*r]); }
+  const Cb=ring.map(v=>[v[0],y,v[1]]), Ct=ring.map(v=>[v[0],y+H,v[1]]);
+  const ctr=[cx, y+H/2, cz];
+  for(let i=0;i<N;i++){ const j=(i+1)%N; const a=Cb[i],b=Cb[j],c=Ct[j],d=Ct[i];
+    const cf=[(a[0]+b[0]+c[0]+d[0])/4,(a[1]+b[1]+c[1]+d[1])/4,(a[2]+b[2]+c[2]+d[2])/4];
+    let n=_orientOut(_faceNormal(a,b,c), cf, ctr);
+    const nc=dirToCam(n[0],n[1],n[2]); if(nc[2]>=-0.0001) continue;
+    const pts=[project(a[0],a[1],a[2]),project(b[0],b[1],b[2]),project(c[0],c[1],c[2]),project(d[0],d[1],d[2])];
+    const z=pts.reduce((s,p)=>s+p[2],0)/4;
+    _pushFace(pts, shade(col,_brightness(n)), 'rgba(13,27,52,.42)', 1, seeThrough?0.92:1, z);
+  }
+  [[Cb,0],[Ct,1]].forEach(([ringP,up])=>{ const n=up?[0,1,0]:[0,-1,0], nc=dirToCam(n[0],n[1],n[2]); if(nc[2]>=-0.0001) return;
+    const pts=ringP.map(v=>project(v[0],v[1],v[2])); const z=pts.reduce((s,p)=>s+p[2],0)/4;
+    _pushFace(pts, shade(col, up?1.05:0.6), 'rgba(13,27,52,.42)', 1, seeThrough?0.92:1, z); });
+}
+function drawBox(it){ _boxFaces(it.x,it.y,it.z,it.L,it.W,it.H, it.color, it.overflow); }
+function drawCyl(it){ _cylFaces(it.x,it.y,it.z,it.L,it.W,it.H, it.color, it.overflow); }
+function drawComposite(it){
+  (it.parts||[]).forEach(p=>{
+    const o={x:it.x+p.dx,y:it.y+p.dy,z:it.z+p.dz,L:p.L,W:p.W,H:p.H};
+    if(p.type==='cyl') _cylFaces(o.x,o.y,o.z,o.L,o.W,o.H, it.color, it.overflow);
+    else _boxFaces(o.x,o.y,o.z,o.L,o.W,o.H, it.color, it.overflow);
   });
-  it.x=s.x; it.y=s.y; it.z=s.z; it.L=s.L; it.W=s.W; it.H=s.H;
 }
-function drawBoxDecor(it){
-  // 堆叠接触处的橙色虚线接缝，清晰标示上下层交汇
+function drawDecor(it){
   if(it.y>1e-6){
     const sh=[[it.x,it.y,it.z],[it.x+it.L,it.y,it.z],[it.x+it.L,it.y,it.z+it.W],[it.x,it.y,it.z+it.W]].map(p=>project(p[0],p[1],p[2]));
     ctx.beginPath(); sh.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
@@ -424,99 +650,72 @@ function drawBoxDecor(it){
     ctx.beginPath(); top.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
     ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]);
   }
-}
-function drawBox(it){ drawBoxPrim(it, it); drawBoxDecor(it); }
-function drawCylPrim(o, it){
-  const s={x:it.x,y:it.y,z:it.z,L:it.L,W:it.W,H:it.H};
-  it.x=o.x; it.y=o.y; it.z=o.z; it.L=o.L; it.W=o.W; it.H=o.H;
-  const {x,y,z,L,W,H}=it;
-  const cx=x+L/2, cz=z+W/2, r=Math.min(L,W)/2;
-  const k=K*scale*zoom, m=M*scale*zoom;
-  const ax=Math.SQRT2*r*k, ay=Math.SQRT2*r*m;
-  const b=project(cx,y,cz), t=project(cx,y+H,cz);
-  const col= it.overflow? 'hsl(0,80%,60%)' : it.color;
-  const lf=layerFactor(y);
-  ctx.beginPath();
-  ctx.moveTo(b[0]-ax,b[1]); ctx.lineTo(b[0]-ax,t[1]);
-  ctx.ellipse(b[0],t[1],ax,ay,0,Math.PI,0,true);
-  ctx.lineTo(b[0]+ax,b[1]);
-  ctx.ellipse(b[0],b[1],ax,ay,0,0,Math.PI,true);
-  ctx.closePath(); ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,0.82*lf); ctx.fill(); ctx.globalAlpha=1;
-  ctx.beginPath(); ctx.ellipse(t[0],t[1],ax,ay,0,0,Math.PI*2); ctx.globalAlpha=seeThrough?0.55:1; ctx.fillStyle=shade(col,1.0*lf); ctx.fill(); ctx.globalAlpha=1;
-  ctx.strokeStyle='rgba(13,27,52,.38)'; ctx.lineWidth=1.1; ctx.stroke();
-  it.x=s.x; it.y=s.y; it.z=s.z; it.L=s.L; it.W=s.W; it.H=s.H;
-}
-function drawCylDecor(it){
-  const {x,y,z,L,W,H}=it;
-  const cx=x+L/2, cz=z+W/2, r=Math.min(L,W)/2;
-  const k=K*scale*zoom, m=M*scale*zoom;
-  const ax=Math.SQRT2*r*k, ay=Math.SQRT2*r*m;
-  const b=project(cx,y,cz), t=project(cx,y+H,cz);
-  if(y>1e-6){
-    ctx.beginPath(); ctx.ellipse(b[0],b[1],ax,ay,0,0,Math.PI*2);
-    ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,196,92,.95)'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
-  }
-  if(it.id===selId){ ctx.beginPath(); ctx.ellipse(t[0],t[1],ax,ay,0,0,Math.PI*2); ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]); }
-}
-function drawCyl(it){ drawCylPrim(it, it); drawCylDecor(it); }
-// 组合件（异形）：各子形状按局部偏移拼合绘制；整体按外接长方体（包络）参与装柜
-function drawComposite(it){
-  const parts=it.parts||[];
-  parts.forEach(p=>{
-    const o={x:it.x+p.dx, y:it.y+p.dy, z:it.z+p.dz, L:p.L, W:p.W, H:p.H};
-    if(p.type==='cyl') drawCylPrim(o, it); else drawBoxPrim(o, it);
-  });
-  const {x,y,z,L,W,H}=it;
-  // 组合体包络的堆叠接缝（橙色虚线）
-  if(it.y>1e-6){
-    const sh=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W]].map(p=>project(p[0],p[1],p[2]));
-    ctx.beginPath(); sh.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
-    ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,196,92,.95)'; ctx.lineWidth=2; ctx.stroke(); ctx.setLineDash([]);
-  }
-  // 包络虚线轮廓（紫色）标示组合整体
-  const env=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W],[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]].map(p=>project(p[0],p[1],p[2]));
-  const ef=[[4,5,6,7],[0,1,5,4],[1,2,6,5],[3,2,6,7],[0,3,7,4],[0,1,2,3]];
-  ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(155,140,255,.9)'; ctx.lineWidth=1.4;
-  ef.forEach(idxs=>{ ctx.beginPath(); idxs.forEach((idx,k)=>{ const p=env[idx]; k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }); ctx.closePath(); ctx.stroke(); });
-  ctx.setLineDash([]);
-  if(it.id===selId){
-    const top=[[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]].map(p=>project(p[0],p[1],p[2]));
-    ctx.beginPath(); top.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
-    ctx.setLineDash([5,4]); ctx.strokeStyle='#5BE0FF'; ctx.lineWidth=2.5; ctx.stroke(); ctx.setLineDash([]);
+  if(it.shape==='composite'){
+    const {x,y,z,L,W,H}=it;
+    const env=[[x,y,z],[x+L,y,z],[x+L,y,z+W],[x,y,z+W],[x,y+H,z],[x+L,y+H,z],[x+L,y+H,z+W],[x,y+H,z+W]].map(p=>project(p[0],p[1],p[2]));
+    const ef=[[4,5,6,7],[0,1,5,4],[1,2,6,5],[3,2,6,7],[0,3,7,4],[0,1,2,3]];
+    ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(155,140,255,.9)'; ctx.lineWidth=1.4;
+    ef.forEach(idxs=>{ ctx.beginPath(); idxs.forEach((idx,k)=>{ const p=env[idx]; k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]); }); ctx.closePath(); ctx.stroke(); });
+    ctx.setLineDash([]);
   }
 }
 function drawContainer(){
   const c=CONTAINERS[curSpec];
-  const corners={
-    floor:[[0,0,0],[c.L,0,0],[c.L,0,c.W],[0,0,c.W]],
-    top:[[0,c.H,0],[c.L,c.H,0],[c.L,c.H,c.W],[0,c.H,c.W]],
-    r:[[c.L,0,0],[c.L,0,c.W],[c.L,c.H,c.W],[c.L,c.H,0]],
-    l:[[0,0,c.W],[c.L,0,c.W],[c.L,c.H,c.W],[0,c.H,c.W]],
-    b:[[0,0,0],[c.L,0,0],[c.L,c.H,0],[0,c.H,0]]
-  };
-  const drawPoly=(arr,fill,stroke,sw)=>{
-    ctx.beginPath();
-    arr.forEach((p,k)=>{ const s=project(p[0],p[1],p[2]); k?ctx.lineTo(s[0],s[1]):ctx.moveTo(s[0],s[1]); });
-    ctx.closePath();
-    if(fill){ctx.fillStyle=fill;ctx.fill();}
-    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
-  };
-  drawPoly(corners.b,'rgba(110,160,245,.05)',null);
-  drawPoly(corners.l,'rgba(110,160,245,.08)',null);
-  drawPoly(corners.r,'rgba(110,160,245,.11)',null);
-  ctx.strokeStyle='rgba(130,170,240,.14)'; ctx.lineWidth=1;
-  for(let i=1;i<c.L;i+=1){ let a=project(i,0,0),b=project(i,0,c.W); ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke(); }
-  for(let j=1;j<c.W;j+=1){ let a=project(0,0,j),b=project(c.L,0,j); ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke(); }
-  drawPoly(corners.floor,null,'rgba(111,160,245,.9)',1.4);
-  drawPoly(corners.top,null,'rgba(111,160,245,.7)',1.2);
-  [[0,0,0,0,c.H,0],[c.L,0,0,c.L,c.H,0],[0,0,c.W,0,c.H,c.W],[c.L,0,c.W,c.L,c.H,c.W]].forEach(e=>{
-    let a=project(e[0],e[1],e[2]),b=project(e[3],e[4],e[5]);
-    ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.strokeStyle='rgba(111,160,245,.9)';ctx.lineWidth=1.4;ctx.stroke();
-  });
+  const COR=[[0,0,0],[c.L,0,0],[c.L,0,c.W],[0,0,c.W],[0,c.H,0],[c.L,c.H,0],[c.L,c.H,c.W],[0,c.H,c.W]];
+  // 地板（半透明），便于看清柜内落点
+  const fp=[[0,0,0],[c.L,0,0],[c.L,0,c.W],[0,0,c.W]].map(p=>project(p[0],p[1],p[2]));
+  ctx.beginPath(); fp.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])); ctx.closePath();
+  ctx.fillStyle='rgba(120,170,250,.10)'; ctx.fill();
+  // 地面网格
+  ctx.strokeStyle='rgba(130,170,240,.16)'; ctx.lineWidth=1;
+  for(let i=1;i<c.L;i+=1){ const a=project(i,0,0),b=project(i,0,c.W); ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke(); }
+  for(let j=1;j<c.W;j+=1){ const a=project(0,0,j),b=project(c.L,0,j); ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke(); }
+  // 12 条边线框
+  const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  ctx.strokeStyle='rgba(125,165,235,.92)'; ctx.lineWidth=1.5;
+  E.forEach(e=>{ const a=project(COR[e[0]][0],COR[e[0]][1],COR[e[0]][2]), b=project(COR[e[1]][0],COR[e[1]][1],COR[e[1]][2]); ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke(); });
+  // 尺寸标注
   ctx.fillStyle='#A9B8D2'; ctx.font='13px sans-serif'; ctx.textAlign='center';
   let p=project(c.L/2,0,c.W); ctx.fillText('长 L · '+c.L.toFixed(2)+' m',p[0],p[1]+22);
   p=project(c.L,0,c.W/2); ctx.fillText('宽 W · '+c.W.toFixed(2)+' m',p[0]+70,p[1]+6);
   p=project(c.L,c.H/2,0); ctx.fillText('高 H · '+c.H.toFixed(2)+' m',p[0]+24,p[1]);
+  drawDoor();
+}
+// 柜门标签 + 装货方向箭头（绘制在货物之上，确保始终可见）
+function drawDoor3D(){
+  const c=CONTAINERS[curSpec];
+  ctx.save(); ctx.textAlign='center';
+  const dp=project(0, c.H+0.25, c.W/2);
+  ctx.fillStyle='#FF9F43'; ctx.font='bold 13px sans-serif';
+  ctx.fillText('柜门 Door', dp[0], dp[1]);
+  const a1=project(0.6,0.03,c.W/2), a2=project(c.L-0.6,0.03,c.W/2);
+  ctx.beginPath(); ctx.moveTo(a1[0],a1[1]); ctx.lineTo(a2[0],a2[1]);
+  ctx.strokeStyle='rgba(255,159,67,.9)'; ctx.lineWidth=2; ctx.setLineDash([7,4]); ctx.stroke(); ctx.setLineDash([]);
+  const ang=Math.atan2(a2[1]-a1[1],a2[0]-a1[0]), ah=11;
+  ctx.beginPath();
+  ctx.moveTo(a2[0],a2[1]); ctx.lineTo(a2[0]-ah*Math.cos(ang-0.42),a2[1]-ah*Math.sin(ang-0.42));
+  ctx.moveTo(a2[0],a2[1]); ctx.lineTo(a2[0]-ah*Math.cos(ang+0.42),a2[1]-ah*Math.sin(ang+0.42));
+  ctx.stroke();
+  ctx.fillStyle='rgba(255,159,67,.95)'; ctx.font='11px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('装货方向', a1[0]+5, a1[1]-6);
+  ctx.restore();
+}
+// 柜门（x=0 端面）：双开门，按 doorAngle 绕两侧竖铰链向外旋转；闭合时贴合柜面、与「柜门 Door」标签同位置
+function drawDoor(){
+  const c=CONTAINERS[curSpec], a=doorAngle, half=c.W/2;
+  const rot=(z,hinge)=>[ -(z-hinge)*Math.sin(a), (z-hinge)*Math.cos(a)+hinge ];
+  const panel=(z0,z1,hinge)=>{
+    const b0=rot(z0,hinge), b1=rot(z1,hinge);
+    const p=[project(b0[0],0,b0[1]),project(b1[0],0,b1[1]),project(b1[0],c.H,b1[1]),project(b0[0],c.H,b0[1])];
+    ctx.beginPath(); p.forEach((q,k)=>k?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1])); ctx.closePath();
+    ctx.fillStyle = a<0.02 ? 'rgba(255,159,67,.15)' : 'rgba(255,159,67,.22)'; ctx.fill();
+    ctx.strokeStyle='rgba(255,159,67,.95)'; ctx.lineWidth=2.4; ctx.stroke();
+    return p;
+  };
+  panel(0, half, 0);          // 左门（铰链 z=0）
+  panel(half, c.W, c.W);      // 右门（铰链 z=W）
+  if(a<0.02){ const m0=project(0,0,half), m1=project(0,c.H,half); ctx.beginPath(); ctx.moveTo(m0[0],m0[1]); ctx.lineTo(m1[0],m1[1]); ctx.strokeStyle='rgba(255,159,67,.6)'; ctx.lineWidth=1.2; ctx.stroke(); }
+  else { [[0,0],[0,c.W]].forEach(([_,z])=>{ const h=project(0,0,z), t=project(0,c.H,z); ctx.beginPath(); ctx.moveTo(h[0],h[1]); ctx.lineTo(t[0],t[1]); ctx.strokeStyle='rgba(255,140,40,.9)'; ctx.lineWidth=2; ctx.stroke(); }); }
 }
 function drawGuides(){
   const c=CONTAINERS[curSpec];
@@ -534,9 +733,9 @@ function drawGuides(){
     if(it.id===selId){
       if(it.shape==='cyl'){
         const cx=it.x+it.L/2, cz=it.z+it.W/2, r=Math.min(it.L,it.W)/2;
-        const k=K*scale*zoom, m=M*scale*zoom, ax=Math.SQRT2*r*k, ay=Math.SQRT2*r*m;
-        const f=project(cx,0,cz);
-        ctx.beginPath(); ctx.ellipse(f[0],f[1],ax,ay,0,0,Math.PI*2);
+        const f0=project(cx,0,cz), f1=project(cx+r,0,cz);
+        const ax=Math.abs(f1[0]-f0[0]), ay=Math.abs(f1[1]-f0[1]);
+        ctx.beginPath(); ctx.ellipse(f0[0],f0[1],Math.max(ax,4),Math.max(ay,4),0,0,Math.PI*2);
         ctx.fillStyle='rgba(91,224,255,.12)'; ctx.fill();
         ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(91,224,255,.8)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.setLineDash([]);
       } else {
@@ -591,6 +790,11 @@ function drawTop(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('L '+c.L.toFixed(2)+'m', X(c.L/2), Y(c.W)+16);
   ctx.save(); ctx.translate(X(0)-12, Y(c.W/2)); ctx.rotate(-Math.PI/2); ctx.fillText('W '+c.W.toFixed(2)+'m',0,0); ctx.restore();
+  // 柜门标注：俯视图中 x=0 端为左侧边
+  ctx.strokeStyle='rgba(255,159,67,.95)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(0),Y(c.W)); ctx.stroke();
+  ctx.fillStyle='#FF9F43'; ctx.font='bold 11px sans-serif'; ctx.textAlign='right';
+  ctx.fillText('柜门', X(0)-5, Y(c.W/2)); ctx.textAlign='center';
   [...items].sort((a,b)=>a.y-b.y).forEach(it=>{ orthoItem(ctxT, X(it.x),Y(it.z),it.L*f.s,it.W*f.s, it, 'top', f.s); });
 }
 function drawFront(){
@@ -601,6 +805,11 @@ function drawFront(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('L '+c.L.toFixed(2)+'m', X(c.L/2), Yu(0)+16);
   ctx.save(); ctx.translate(X(0)-12, Yu(c.H/2)); ctx.rotate(-Math.PI/2); ctx.fillText('H '+c.H.toFixed(2)+'m',0,0); ctx.restore();
+  // 柜门标注：正视图中 x=0 端为左侧边
+  ctx.strokeStyle='rgba(255,159,67,.95)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(X(0),Yu(c.H)); ctx.lineTo(X(0),Yu(0)); ctx.stroke();
+  ctx.fillStyle='#FF9F43'; ctx.font='bold 11px sans-serif'; ctx.textAlign='right';
+  ctx.fillText('柜门', X(0)-5, Yu(c.H/2)); ctx.textAlign='center';
   [...items].sort((a,b)=>a.z-b.z).forEach(it=>{ orthoItem(ctxF, X(it.x),Yu(it.y+it.H),it.L*f.s,it.H*f.s, it, 'front', f.s); });
 }
 function drawRight(){
@@ -611,24 +820,127 @@ function drawRight(){
   ctx.fillStyle='#8FA3C4'; ctx.font='11px sans-serif'; ctx.textAlign='center';
   ctx.fillText('W '+c.W.toFixed(2)+'m', X(c.W/2), Yu(0)+16);
   ctx.save(); ctx.translate(X(0)-12, Yu(c.H/2)); ctx.rotate(-Math.PI/2); ctx.fillText('H '+c.H.toFixed(2)+'m',0,0); ctx.restore();
+  // 柜门在纵深 x=0 端（右视图沿 x 方向剖切，门与尾端投影重合，以文字标注）
+  ctx.fillStyle='#FF9F43'; ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('柜门: 纵深 x=0 端', X(c.W/2), Yu(c.H)-6);
   [...items].sort((a,b)=>a.x-b.x).forEach(it=>{ orthoItem(ctxR, X(it.z),Yu(it.y+it.H),it.W*f.s,it.H*f.s, it, 'right', f.s); });
 }
+let renderPending=false;
 function render(){
-  resize(); fitView();
+  if(renderPending) return;
+  renderPending=true;
+  requestAnimationFrame(()=>{
+    renderPending=false;
+    doorAngle = 0;
+    loadT = 1;
+    renderMain(1);
+    if(orthoVisible){ drawTop(); drawFront(); drawRight(); }
+    updatePanels();
+    saveState();
+  });
+}
+// 仅重绘 3D 主视图（含装柜动画进度）；动画与录制时只调它，效率更高且被录画布一致
+function renderMain(progress){
+  resize(); fitView(cv);
   ctx.clearRect(0,0,cv.width,cv.height);
   drawContainer();
   drawGuides();
-  const sorted=[...items].sort((a,b)=>{
-    const pa=project(a.x+a.L/2,a.y,a.z+a.W/2), pb=project(b.x+b.L/2,b.y,b.z+b.W/2);
-    return (pa[0]+pa[1])-(pb[0]+pb[1]);
+  const seq = (loadSeq.length && progress < 1) ? loadSeq : items;
+  const N = seq.length;
+  const vis = (progress >= 1) ? seq : seq.slice(0, Math.max(0, Math.floor(progress*N + 1e-9)));
+  const c = CONTAINERS[curSpec];
+  _faces=[];
+  vis.forEach(it=>{
+    let y=it.y;
+    if(progress < 1){ const idx=seq.indexOf(it); const lp=Math.max(0,Math.min(1,progress*N-idx)); if(lp<1) y=it.y+(1-lp)*Math.max(0.5,c.H-it.y-it.H); }
+    const tmp={ ...it, y };
+    if(it.shape==='composite') drawComposite(tmp); else if(it.shape==='cyl') drawCyl(tmp); else drawBox(tmp);
   });
-  sorted.forEach(it=>{
-    if(it.shape==='composite') drawComposite(it);
-    else if(it.shape==='cyl') drawCyl(it);
-    else drawBox(it);
-  });
-  drawTop(); drawFront(); drawRight();
-  updatePanels();
+  flushFaces();
+  vis.forEach(it=>{ let y=it.y; if(progress<1){ const idx=seq.indexOf(it); const lp=Math.max(0,Math.min(1,progress*N-idx)); if(lp<1) y=it.y+(1-lp)*Math.max(0.5,c.H-it.y-it.H);} drawDecor({...it,y}); });
+  drawDoor3D();
+}
+// 物理可达的装柜顺序：拓扑贪心 —— 保证“支撑件先装”，且从柜门对侧（远端 x 大）逐列由下往上装，
+// 使每件装入时其正下方支撑已就位、且朝向柜门一侧仍为空，叉车可直达，避免“底层排满后上层够不着”。
+function feasibleLoadOrder(){
+  const arr=[...items];
+  const loaded=new Set();
+  const order=[];
+  const supportsOf = it => arr.filter(o=> o.id!==it.id &&
+      o.x < it.x+it.L && it.x < o.x+o.L && o.z < it.z+it.W && it.z < o.z+o.W &&
+      Math.abs(o.y+o.H - it.y) < 1e-6 );
+  let guard=0;
+  while(loaded.size < arr.length && guard++ < arr.length + 5){
+    const cands = arr.filter(it=> !loaded.has(it) && (it.y<=1e-6 || supportsOf(it).every(o=>loaded.has(o))));
+    if(!cands.length) break; // 理论上不会发生（计划已保证支撑）
+    cands.sort((a,b)=> (b.x-a.x) || (a.y-b.y) || (a.z-b.z)); // 远端(x大)先装→柜门侧(x=0)最后；同列由下往上
+    const pick=cands[0];
+    loaded.add(pick); order.push(pick);
+  }
+  arr.filter(it=>!loaded.has(it)).forEach(it=>order.push(it)); // 兜底：异常浮动件直接追加，避免动画缺件
+  return order;
+}
+function updateLoadUI(p,N){
+  const done=Math.min(N, Math.round(p*N));
+  document.getElementById('loadTxt').textContent='装柜中 '+done+' / '+N;
+  document.getElementById('loadFill').style.width=(p*100).toFixed(1)+'%';
+}
+function playLoading(onDone){
+  if(!items.length){ if(onDone) onDone(); return; }
+  loadSeq = feasibleLoadOrder();
+  const N = loadSeq.length;
+  const doorDur = 700;                                            // 开门动画时长（ms）
+  const loadDur = Math.max(2200, Math.min(19000, N*450));         // 装货动画时长（ms），每件约 0.45s，整体 2.2~19s
+  const total = doorDur + loadDur;
+  let t0=null;
+  cancelAnimationFrame(animRAF); animRAF=null;
+  const bar=document.getElementById('loadBar'); bar.style.display='flex';
+  function frame(now){
+    if(t0===null) t0=now;
+    const el=now-t0;
+    if(el < doorDur){                                             // 阶段1：开门（货尚未入柜）
+      doorAngle = DOOR_OPEN * easeOut(el/doorDur);
+      loadT = 0; renderMain(0);
+      document.getElementById('loadTxt').textContent='开门中…';
+      document.getElementById('loadFill').style.width='0%';
+    } else {                                                      // 阶段2：装货（柜门保持全开）
+      const lp = Math.min(1,(el-doorDur)/loadDur);
+      doorAngle = DOOR_OPEN;
+      loadT = lp; renderMain(lp); updateLoadUI(lp,N);
+    }
+    if(el < total){ animRAF=requestAnimationFrame(frame); }
+    else { animRAF=null; doorAngle=DOOR_OPEN; loadT=1; renderMain(1); updateLoadUI(1,N);
+      setTimeout(()=>{ bar.style.display='none'; }, 600);
+      if(onDone) onDone();
+    }
+  }
+  animRAF=requestAnimationFrame(frame);
+}
+function pickMime(){
+  const cands=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+  for(const c of cands){ if(window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c; }
+  return '';
+}
+function showVideo(blob){
+  const url=URL.createObjectURL(blob);
+  const v=document.getElementById('vidPrev'); v.src=url;
+  document.getElementById('vidDl').href=url;
+  document.getElementById('videoCard').style.display='block';
+}
+function recordLoading(){
+  if(!items.length) return;
+  if(!window.MediaRecorder || !cv.captureStream){ alert('当前浏览器不支持视频录制（MediaRecorder）。建议使用 Chrome / Edge / Firefox 桌面版。'); return; }
+  const mime=pickMime();
+  if(!mime){ alert('当前浏览器不支持 WebM 录制，无法生成视频。'); return; }
+  let stream; try{ stream=cv.captureStream(30); }catch(e){ alert('无法捕获画布画面：'+e.message); return; }
+  const chunks=[];
+  let rec;
+  try{ rec=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:4000000}); }
+  catch(e){ alert('无法创建录制器：'+e.message); return; }
+  rec.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{ if(chunks.length) showVideo(new Blob(chunks,{type:mime})); };
+  rec.start();
+  playLoading(()=>{ try{ rec.stop(); }catch(e){} });
 }
 
 // ---------- panels ----------
@@ -641,8 +953,30 @@ function setVal(id, val){ const el=document.getElementById(id); if(el && documen
 let peBuiltFor=null;
 function ensurePartsEditor(g){
   const pe=document.getElementById('partsEditor');
-  if(g && g.shape==='composite'){ pe.style.display='flex'; if(peBuiltFor!==g.id){ rebuildPartsEditor(g); peBuiltFor=g.id; } }
+  if(g && g.shape==='composite'){ pe.style.display='flex'; if(peBuiltFor!==g.id){ rebuildPartsEditor(g); peBuiltFor=g.id; } else { drawPePreview(g); } }
   else { pe.style.display='none'; peBuiltFor=null; }
+}
+// 组合件实时预览：俯视（长×宽）+ 正视（长×高），随子形状尺寸/偏移即时变化
+function drawPePreview(g){
+  const ct=document.getElementById('pePrevTop'), cf=document.getElementById('pePrevFront'); if(!ct||!cf||!g.parts||!g.parts.length) return;
+  const e=envOf(g.parts); if(!e.L||!e.W||!e.H) return;
+  const draw=(cv, axisW, axisH, px, py, pw, ph)=>{ // px/py/pw/ph 取部分在 (长,axis) 平面的局部坐标
+    const c=cv.getContext('2d'); const cw=cv.width, ch=cv.height, pad=10;
+    c.clearRect(0,0,cw,ch);
+    const s=Math.min((cw-2*pad)/axisW,(ch-2*pad)/axisH), ox=(cw-axisW*s)/2, oy=(ch-axisH*s)/2;
+    // 包络（外接长方体）虚线框
+    c.setLineDash([4,3]); c.strokeStyle='rgba(155,140,255,.7)'; c.lineWidth=1;
+    c.strokeRect(ox, oy, axisW*s, axisH*s); c.setLineDash([]);
+    g.parts.forEach(p=>{
+      const x=ox+px(p)*s, y=oy+py(p)*s, w=pw(p)*s, h=ph(p)*s;
+      c.fillStyle = p.type==='cyl'? 'rgba(95,224,255,.30)' : g.color;
+      c.globalAlpha=0.85; c.fillRect(x,y,w,h); c.globalAlpha=1;
+      c.strokeStyle='rgba(13,27,52,.55)'; c.lineWidth=1; c.strokeRect(x,y,w,h);
+      if(p.type==='cyl'){ c.save(); c.beginPath(); c.rect(x,y,w,h); c.clip(); c.strokeStyle='rgba(255,255,255,.55)'; c.lineWidth=1; for(let d=-h; d<w; d+=6){ c.beginPath(); c.moveTo(x+d,y+h); c.lineTo(x+d+h,y); c.stroke(); } c.restore(); }
+    });
+  };
+  draw(ct, e.L, e.W, p=>p.dx, p=>p.dz, p=>p.L, p=>p.W);
+  draw(cf, e.L, e.H, p=>p.dx, p=>(e.H-(p.dy+p.H)), p=>p.L, p=>p.H);
 }
 function rebuildPartsEditor(g){
   const list=document.getElementById('peList'); list.innerHTML='';
@@ -654,18 +988,19 @@ function rebuildPartsEditor(g){
     row.innerHTML=`<div class="pe-top"><span>子形状 ${i+1}</span><span class="pe-del" data-i="${i}">×</span></div>
       <div class="pe-type-row"><select class="pe-type" data-i="${i}">${typeOpts}</select></div>
       <div class="pe-grid">
-        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.L.toFixed(2)}" data-i="${i}" data-f="L"><span>长 L</span></div>
-        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.W.toFixed(2)}" data-i="${i}" data-f="W"><span>宽 W</span></div>
-        <div class="fld"><input type="number" step="0.1" min="0.1" value="${p.H.toFixed(2)}" data-i="${i}" data-f="H"><span>高 H</span></div>
-        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dx.toFixed(2)}" data-i="${i}" data-f="dx"><span>偏 X</span></div>
-        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dy.toFixed(2)}" data-i="${i}" data-f="dy"><span>偏 Y</span></div>
-        <div class="fld"><input type="number" step="0.1" min="0" value="${p.dz.toFixed(2)}" data-i="${i}" data-f="dz"><span>偏 Z</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${fromM(p.L).toFixed(2)}" data-i="${i}" data-f="L"><span>长 L</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${fromM(p.W).toFixed(2)}" data-i="${i}" data-f="W"><span>宽 W</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0.1" value="${fromM(p.H).toFixed(2)}" data-i="${i}" data-f="H"><span>高 H</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${fromM(p.dx).toFixed(2)}" data-i="${i}" data-f="dx"><span>偏 X</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${fromM(p.dy).toFixed(2)}" data-i="${i}" data-f="dy"><span>偏 Y</span></div>
+        <div class="fld"><input type="number" step="0.1" min="0" value="${fromM(p.dz).toFixed(2)}" data-i="${i}" data-f="dz"><span>偏 Z</span></div>
       </div>`;
     list.appendChild(row);
   });
+  drawPePreview(g);
   list.querySelectorAll('.pe-del').forEach(btn=>btn.onclick=()=>{ const i=+btn.dataset.i; if(g.parts.length<=1) return; g.parts.splice(i,1); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); });
-  list.querySelectorAll('.pe-type').forEach(sel=>sel.onchange=()=>{ const i=+sel.dataset.i; g.parts[i].type=sel.value; applyGroupDims(g); render(); });
-  list.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{ const i=+inp.dataset.i, f=inp.dataset.f; const v=parseFloat(inp.value); if(isNaN(v)) return; g.parts[i][f]= f.startsWith('d')? Math.max(0,v) : Math.max(0.1,v); syncComposite(g); applyGroupDims(g); render(); });
+  list.querySelectorAll('.pe-type').forEach(sel=>sel.onchange=()=>{ const i=+sel.dataset.i; g.parts[i].type=sel.value; applyGroupDims(g); drawPePreview(g); render(); });
+  list.querySelectorAll('input[data-f]').forEach(inp=>inp.oninput=()=>{ const i=+inp.dataset.i, f=inp.dataset.f; const v=parseFloat(inp.value); if(isNaN(v)) return; g.parts[i][f]= f.startsWith('d')? Math.max(0,toM(v)) : Math.max(0.1,toM(v)); syncComposite(g); applyGroupDims(g); drawPePreview(g); render(); });
 }
 function updatePanels(){
   const c=CONTAINERS[curSpec];
@@ -695,10 +1030,11 @@ function updatePanels(){
     const isComp = g.shape==='composite';
     ['inL','inW','inH'].forEach(id=>{ const el=document.getElementById(id); el.disabled=isComp; el.style.opacity=isComp?0.5:1; });
     if(isComp){ setVal('inL',(+g.oL).toFixed(2)); setVal('inW',(+g.oW).toFixed(2)); setVal('inH',(+g.oH).toFixed(2)); }
-    else { setVal('inL',g.oL); setVal('inW',g.oW); setVal('inH',g.oH); }
+    else { setVal('inL',fromM(g.oL).toFixed(2)); setVal('inW',fromM(g.oW).toFixed(2)); setVal('inH',fromM(g.oH).toFixed(2)); }
     ensurePartsEditor(g);
     setVal('qtyVal',countOf(g.id));
-    setVal('inX',(+it.x).toFixed(1)); setVal('inY',(+it.y).toFixed(1)); setVal('inZ',(+it.z).toFixed(1));
+    setVal('inWt', g.weight||0);
+    setVal('inX',fromM(it.x).toFixed(1)); setVal('inY',fromM(it.y).toFixed(1)); setVal('inZ',fromM(it.z).toFixed(1));
     document.getElementById('stackSw').classList.toggle('on',g.stack);
     document.getElementById('stackTxt').textContent=g.stack?'开启':'关闭';
   } else {
@@ -737,7 +1073,7 @@ function updatePanels(){
     const dim = g.shape==='cyl'? (Math.min(g.oL,g.oW).toFixed(1)+'×'+g.oH.toFixed(1)) : (g.oL.toFixed(1)+'×'+g.oW.toFixed(1)+'×'+g.oH.toFixed(1));
     const ok=!grpOverflow;
     const div=document.createElement('div'); div.className='chk';
-    div.innerHTML=`<span class="d ${ok?'':'no'}"></span><span class="nm">${g.name} ×${n} · ${dim}m</span><span class="rs ${ok?'':'no'}">${ok?'合格':'超限'}</span>`;
+    div.innerHTML=`<span class="d ${ok?'':'no'}"></span><span class="nm">${escapeHtml(g.name)} ×${n} · ${dim}m</span><span class="rs ${ok?'':'no'}">${ok?'合格':'超限'}</span>`;
     div.style.cursor='pointer'; div.onclick=()=>{ const first=items.find(i=>i.groupId===g.id); if(first) select(first.id); };
     cl.appendChild(div);
   });
@@ -764,42 +1100,53 @@ function resolveStack(it){
   it.y=Math.min(c.H-it.H, Math.max(0,top));
 }
 
-// drag on canvas
+// 拖动：空白处旋转视角；货件上拖动则在地面平移；滚轮缩放
 let drag=null;
 function pickItem(mx,my){
-  let best=null,bestD=-1e9;
+  let best=null,bestD=1e9;
   for(const it of items){
-    const c=project(it.x+it.L/2,it.y+it.H,it.z+it.W/2);
-    const r=Math.max(it.L,it.W)*scale*zoom*0.9+20;
-    if(Math.abs(mx-c[0])<r && Math.abs(my-c[1])<r){ if(c[0]+c[1]>bestD){bestD=c[0]+c[1];best=it;} }
+    const C=[[it.x,it.y,it.z],[it.x+it.L,it.y,it.z],[it.x+it.L,it.y,it.z+it.W],[it.x,it.y,it.z+it.W],
+             [it.x,it.y+it.H,it.z],[it.x+it.L,it.y+it.H,it.z],[it.x+it.L,it.y+it.H,it.z+it.W],[it.x,it.y+it.H,it.z+it.W]];
+    let minX=1e9,maxX=-1e9,minY=1e9,maxY=-1e9;
+    C.forEach(p=>{ const s=project(p[0],p[1],p[2]); if(s[0]<minX)minX=s[0]; if(s[0]>maxX)maxX=s[0]; if(s[1]<minY)minY=s[1]; if(s[1]>maxY)maxY=s[1]; });
+    if(mx>=minX-6&&mx<=maxX+6&&my>=minY-6&&my<=maxY+6){ const cz=toCam(it.x+it.L/2,it.y+it.H/2,it.z+it.W/2)[2]; if(cz<bestD){bestD=cz;best=it;} }
   }
   return best;
 }
 cv.addEventListener('mousedown',e=>{
+  autoRotate=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} doorAngle=0;
   const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
   const it=pickItem(mx,my);
-  if(it){ selId=it.id; drag={view:'3d', it,sx:mx,sy:my,ox:it.x,oy:it.y,oz:it.z}; render(); }
+  if(it){ selId=it.id; drag={mode:'item', it,sx:mx,sy:my,ox:it.x,oz:it.z}; render(); }
+  else { drag={mode:'orbit', sx:mx, sy:my}; }
 });
 window.addEventListener('mousemove',e=>{
   if(!drag) return;
-  if(drag.view==='3d'){
-    const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
-    const dxs=mx-drag.sx, dys=my-drag.sy;
-    const k=K*scale*zoom, m=M*scale*zoom;
-    const dx=((dxs/k)+(dys/m))/2, dz=((dys/m)-(dxs/k))/2;
-    drag.it.x=drag.ox+dx; drag.it.z=drag.oz+dz;
-    clampItem(drag.it); resolveStack(drag.it);
-  } else {
+  if(drag.view){
     const cvEl = drag.view==='top'?cvTop: drag.view==='front'?cvFront: cvRight;
     const r=cvEl.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
     const f=drag.f, dwx=(mx-drag.sx)/f.s;
     if(drag.view==='top'){ drag.it.x=drag.ox+dwx; drag.it.z=drag.oz+(my-drag.sy)/f.s; clampItem(drag.it); resolveStack(drag.it); }
     else if(drag.view==='front'){ drag.it.x=drag.ox+dwx; drag.it.y=drag.oy+(drag.sy-my)/f.s; clampItem(drag.it); }
     else { drag.it.z=drag.oz+dwx; drag.it.y=drag.oy+(drag.sy-my)/f.s; clampItem(drag.it); }
+    render(); return;
   }
-  render();
+  const r=cv.getBoundingClientRect(); const mx=e.clientX-r.left, my=e.clientY-r.top;
+  if(drag.mode==='orbit'){
+    yaw += (mx-drag.sx)*0.01;
+    pitch = Math.max(-1.45, Math.min(1.45, pitch + (my-drag.sy)*0.01));
+    drag.sx=mx; drag.sy=my; renderMain(1);
+  } else if(drag.mode==='item'){
+    const fpx=(focal*zoom)/camDist;
+    const dCamX=(mx-drag.sx)/fpx, dCamY=-(my-drag.sy)/fpx;
+    const worldX=dCamX*Math.cos(yaw)+dCamY*Math.sin(yaw);
+    const worldZ=-dCamX*Math.sin(yaw)+dCamY*Math.cos(yaw);
+    drag.it.x=drag.ox+worldX; drag.it.z=drag.oz+worldZ;
+    clampItem(drag.it); resolveStack(drag.it); render();
+  }
 });
-window.addEventListener('mouseup',()=>{ drag=null; });
+window.addEventListener('mouseup',()=>{ if(drag){ drag=null; render(); } });
+cv.addEventListener('wheel',e=>{ e.preventDefault(); doorAngle=0; zoom=Math.max(0.35,Math.min(3.2, zoom*(e.deltaY<0?1.12:0.89))); renderMain(1); },{passive:false});
 
 // drag on orthographic views (Top / Front / Right) — 拖动后通过 render() 联动刷新所有视图
 function orthoFitFor(view){
@@ -838,8 +1185,17 @@ function bindOrtho(view, cvEl){
 bindOrtho('top',cvTop); bindOrtho('front',cvFront); bindOrtho('right',cvRight);
 
 // ---------- controls ----------
-document.getElementById('specSel').addEventListener('change',e=>{ curSpec=e.target.value; zoom=1; render(); });
-document.getElementById('addCargo').onclick=()=>{ const g=addGroup('box',1.2,1.0,1.0,true); selId=items[items.length-1].id; render(); };
+document.getElementById('specSel').addEventListener('change',e=>{ curSpec=e.target.value; zoom=1.15; render(); });
+document.getElementById('dimUnit').addEventListener('change',e=>{ dimUnit=e.target.value; render(); });
+function doAddCargo(){
+  // 读取货物清单卡片自带的尺寸输入框（单位：米），空值回退默认 1.2×1.0×1.0，保证永远有响应
+  const L=Math.max(0.1, +document.getElementById('addL').value||1.2);
+  const W=Math.max(0.1, +document.getElementById('addW').value||1.0);
+  const H=Math.max(0.1, +document.getElementById('addH').value||1.0);
+  const g=addGroup('box', L, W, H, true, 0); selId=items[items.length-1].id; render();
+}
+document.getElementById('addCargo').onclick=doAddCargo;
+document.getElementById('addBtn').onclick=doAddCargo;
 document.getElementById('chipBox').onclick=()=>{ const g=selGroup(); if(g){g.shape='box'; g.parts=null; applyGroupDims(g); render();} };
 document.getElementById('chipCyl').onclick=()=>{ const g=selGroup(); if(g){g.shape='cyl'; g.parts=null; applyGroupDims(g); render();} };
 document.getElementById('chipComposite').onclick=()=>{ const g=selGroup(); if(!g)return; if(g.shape!=='composite'){ g.parts=[{type:'box',L:g.oL,W:g.oW,H:g.oH,dx:0,dy:0,dz:0}]; } g.shape='composite'; syncComposite(g); applyGroupDims(g); render(); };
@@ -848,32 +1204,574 @@ function applyGroupDims(g){
 }
 ['inL','inW','inH'].forEach(id=>{
   document.getElementById(id).addEventListener('input',e=>{ const g=selGroup(); if(!g)return; if(g.shape==='composite') return; // 组合件尺寸由子形状决定
-    const L=parseFloat(document.getElementById('inL').value), W=parseFloat(document.getElementById('inW').value), H=parseFloat(document.getElementById('inH').value);
-    if(isNaN(L)||isNaN(W)||isNaN(H)) return;   // 允许输入中间态（如 "1."）不更新模型
+    const L=toM(document.getElementById('inL').value), W=toM(document.getElementById('inW').value), H=toM(document.getElementById('inH').value);
+    if(!(L>0&&W>0&&H>0)) return;   // 允许输入中间态（如 "1."）不更新模型
     g.oL=Math.max(0.1,L); g.oW=Math.max(0.1,W); g.oH=Math.max(0.1,H);
-    if(g.shape==='cyl'){ g.oW=g.oL; setVal('inW',g.oW.toFixed(2)); }
+    if(g.shape==='cyl'){ g.oW=g.oL; setVal('inW',fromM(g.oW).toFixed(2)); }
     applyGroupDims(g); render(); });
 });
+document.getElementById('inWt').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; const w=Math.max(0,+e.target.value||0); g.weight=w; items.filter(i=>i.groupId===g.id).forEach(i=>i.weight=w); render(); });
 ['inX','inY','inZ'].forEach(id=>{
   document.getElementById(id).addEventListener('input',e=>{ const it=getSel(); if(!it)return;
-    const map={inX:'x',inY:'y',inZ:'z'}; it[map[id]]=+e.target.value||0; clampItem(it); resolveStack(it); render(); });
+    const map={inX:'x',inY:'y',inZ:'z'}; it[map[id]]=toM(e.target.value); clampItem(it); resolveStack(it); render(); });
 });
 document.getElementById('stackToggle').onclick=()=>{ const g=selGroup(); if(!g)return; g.stack=!g.stack; applyGroupDims(g);
   if(g.stack){ items.filter(i=>i.groupId===g.id).forEach(resolveStack); } render(); };
 document.getElementById('qtyMinus').onclick=()=>{ const g=selGroup(); if(!g)return; if(countOf(g.id)<=1) return; const idx=items.findIndex(i=>i.groupId===g.id); removeItem(items[idx].id); render(); };
 document.getElementById('qtyPlus').onclick=()=>{ const g=selGroup(); if(!g)return; const n=addInstance(g); selId=n.id; render(); };
-document.getElementById('qtyVal').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; let n=Math.max(1, Math.floor(+e.target.value||1)); const cur=countOf(g.id); if(n>cur){ for(let k=0;k<n-cur;k++) addInstance(g); } else if(n<cur){ const ids=items.filter(i=>i.groupId===g.id).slice(0,cur-n).map(i=>i.id); items=items.filter(i=>!ids.includes(i.id)); if(ids.includes(selId)) selId=null; } const first=items.find(i=>i.groupId===g.id); if(first) selId=first.id; render(); });
-document.getElementById('peAdd').onclick=()=>{ const g=selGroup(); if(!g||g.shape!=='composite') return; g.parts.push({type:'box',L:0.6,W:0.6,H:0.6,dx:0,dy:0,dz:0}); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); };
+let qtyRenderTimer=null;
+document.getElementById('qtyVal').addEventListener('input',e=>{ const g=selGroup(); if(!g)return; let n=Math.max(1, Math.floor(+e.target.value||1)); const cur=countOf(g.id); if(n>cur){ for(let k=0;k<n-cur;k++) addInstance(g); } else if(n<cur){ const ids=items.filter(i=>i.groupId===g.id).slice(0,cur-n).map(i=>i.id); items=items.filter(i=>!ids.includes(i.id)); if(ids.includes(selId)) selId=null; } const first=items.find(i=>i.groupId===g.id); if(first) selId=first.id; if(qtyRenderTimer) clearTimeout(qtyRenderTimer); qtyRenderTimer=setTimeout(()=>{ qtyRenderTimer=null; render(); },120); });
+// 新增子形状时，默认放置在「当前包络顶部 + 偏向 +x/+z 角」，保证立刻可见、轮廓随构成变化（不再藏在包络内导致「看着还是长方体」）
+document.getElementById('peAdd').onclick=()=>{ const g=selGroup(); if(!g||g.shape!=='composite') return; const e=envOf(g.parts||[{L:g.oL,W:g.oW,H:g.oH}]); const dx=e.L>0.6?(e.L-0.6):0, dz=e.W>0.6?(e.W-0.6):0; g.parts.push({type:'box',L:0.6,W:0.6,H:0.6,dx,dy:e.H,dz}); syncComposite(g); applyGroupDims(g); rebuildPartsEditor(g); render(); };
 document.getElementById('delBtn').onclick=()=>{ const g=selGroup(); if(g) removeGroup(g.id); };
-document.getElementById('dupBtn').onclick=()=>{ const g=selGroup(); if(!g)return; const ng=addGroup(g.shape,g.oL,g.oW,g.oH,g.stack); selId=items[items.length-1].id; render(); };
+document.getElementById('dupBtn').onclick=()=>{ const g=selGroup(); if(!g)return; const ng=addGroup(g.shape,g.oL,g.oW,g.oH,g.stack,g.weight); selId=items[items.length-1].id; render(); };
 document.getElementById('autoBtn').onclick=optimalPlan;
 document.getElementById('manualBtn').onclick=()=>{ planned=false; items.forEach(i=>i.overflow=false); document.getElementById('methodTxt').textContent='已恢复手动摆放，可自由拖动调整。再次点「生成最优装柜计划」可重新求最优排布。'; render(); };
-document.getElementById('zIn').onclick=()=>{ zoom=Math.min(2.5,zoom*1.15); render(); };
-document.getElementById('zOut').onclick=()=>{ zoom=Math.max(0.4,zoom/1.15); render(); };
-document.getElementById('rot').onclick=()=>{ yaw=(yaw+1)%4; document.getElementById('viewMode').textContent=['等轴测投影','右视','后视','左视'][yaw]; render(); };
+document.getElementById('playBtn').onclick=()=>{ if(animRAF) return; playLoading(null); };
+document.getElementById('recBtn').onclick=()=>{ if(animRAF) return; recordLoading(); };
+document.getElementById('vidAgain').onclick=()=>{ recordLoading(); };
+document.getElementById('zIn').onclick=()=>{ zoom=Math.min(3.2,zoom*1.12); render(); };
+document.getElementById('zOut').onclick=()=>{ zoom=Math.max(0.35,zoom/1.12); render(); };
+document.getElementById('rot').onclick=()=>{ autoRotate=!autoRotate; document.getElementById('rot').classList.toggle('on',autoRotate); document.getElementById('viewMode').textContent= autoRotate?'透视 3D · 自动旋转':'透视 3D · 可拖动'; if(autoRotate){ if(!autoRAF) autoTick(); } else if(autoRAF){ cancelAnimationFrame(autoRAF); autoRAF=null; } };
 document.getElementById('seeThru').onclick=()=>{ seeThrough=!seeThrough; document.getElementById('seeThru').classList.toggle('on',seeThrough); render(); };
-document.getElementById('clear').onclick=()=>{ items=[]; groups=[]; selId=null; planned=false; render(); };
-document.getElementById('resetView').onclick=()=>{ yaw=0; zoom=1; document.getElementById('viewMode').textContent='等轴测投影'; render(); };
+document.getElementById('clear').onclick=()=>{ if(viewBackup) exitPreview(); items=[]; groups=[]; selId=null; planned=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} autoRotate=false; render(); };
+document.getElementById('exitPreview').onclick=exitPreview;
+document.getElementById('resetView').onclick=()=>{ yaw=0.6; pitch=-0.5; zoom=1.15; autoRotate=false; if(autoRAF){cancelAnimationFrame(autoRAF);autoRAF=null;} document.getElementById('rot').classList.remove('on'); document.getElementById('viewMode').textContent='透视 3D · 可拖动'; render(); };
+document.getElementById('orthoTab').onclick=()=>{
+  orthoVisible=!orthoVisible;
+  applyOrthoState();
+  render();
+};
+
+// ---------- 装箱单（PACKING LIST）识别 / 导入 ----------
+let lastParsed=null;
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function median(a){ const b=[...a].filter(v=>isFinite(v)).sort((x,y)=>x-y); const n=b.length; if(!n) return 0; return n%2? b[(n-1)/2] : (b[n/2-1]+b[n/2])/2; }
+function detectUnit(str){
+  const s=' '+String(str==null?'':str).toLowerCase()+' ';
+  if(/mm|毫米/.test(s)) return 0.001;
+  if(/\bcm\b|厘米/.test(s)) return 0.01;
+  if(/\bin\b|英寸|inch/.test(s)) return 0.0254;
+  if(/\bft\b|英尺|foot/.test(s)) return 0.3048;
+  if(/\bm\b|米/.test(s)) return 1;
+  return null;
+}
+function guessUnit(values){
+  const nums=values.filter(v=>v>0&&isFinite(v));
+  if(!nums.length) return 1;
+  const med=median(nums);
+  if(med>=1000) return 0.001;
+  if(med>=10) return 0.01;
+  return 1;
+}
+const _HKEYS={
+  name:['名称','品名','货物','货名','货物名称','商品','description','desc','item','product','name','material','货物描述','型号','model'],
+  L:['长','长度','length','len','l','long','lengthwise'],
+  W:['宽','宽度','width','wid','w','breadth'],
+  H:['高','高度','height','hei','h','hg','tall'],
+  qty:['数量','件数','箱数','quantity','qty','quant','pcs','ctn','carton','count','总件数','箱'],
+  dim:['尺寸','规格','规格尺寸','dimension','dim','dimensions','size','sizes','体积尺寸'],
+  type:['形状','类型','type','shape','kind','货物类型'],
+  weight:['重量','毛重','净重','总重','单重','gross','net','weight','wt','kg','吨'],
+};
+function matchHeader(token, field){
+  const t=String(token==null?'':token).trim().toLowerCase();
+  if(!t) return false;
+  return _HKEYS[field].some(k=>{
+    const kk=k.toLowerCase();
+    if(kk.length===1){
+      if(/[a-z]/i.test(kk)) return t===kk || new RegExp('^'+kk+'[^a-z]').test(t); // 仅 ASCII 单字母（l/w/h）需精确或"字母+非字母"；兼容 L(in) 等写法
+      return t.includes(kk); // CJK 单字（长/宽/高/名…）按包含匹配
+    }
+    return t===kk || t.includes(kk) || (kk.includes(t)&&t.length>=2);
+  });
+}
+function numOnly(cell){
+  if(cell==null) return null;
+  const s=String(cell).replace(/(mm|cm|厘米|毫米|inch|in|英寸|ft|英尺|foot|m|米)\b/gi,'').replace(/,/g,'');
+  const m=s.match(/-?\d+(\.\d+)?/);
+  if(!m) return null;
+  const v=parseFloat(m[0]);
+  return isFinite(v)? v : null;
+}
+function splitDim(str){
+  return String(str).split(/[x×*,\/\s]+/i).map(numOnly).filter(v=>v!=null&&isFinite(v));
+}
+function textToRows(text){
+  const raw=String(text).split(/\r?\n/).map(l=>l.replace(/\u00a0/g,' ').trim()).filter(l=>l.length);
+  if(!raw.length) return [];
+  const delims=[',','\t',';','|'];
+  const counts=delims.map(d=>raw.slice(0,12).reduce((s,l)=>s+(l.split(d).length-1),0));
+  let bi=0; for(let i=1;i<counts.length;i++) if(counts[i]>counts[bi]) bi=i;
+  const delim=delims[bi];
+  return raw.map(l=>l.split(delim).map(c=>c.trim()));
+}
+function rowToCargo(cells, colMap, headerless){
+  let Lc=null,Wc=null,Hc=null,dc=null,name='',qtyc=null,typec='',wtc=null;
+  if(!headerless && colMap){
+    Lc=colMap.L!=null?cells[colMap.L]:null;
+    Wc=colMap.W!=null?cells[colMap.W]:null;
+    Hc=colMap.H!=null?cells[colMap.H]:null;
+    dc=colMap.dim!=null?cells[colMap.dim]:null;
+    name=colMap.name!=null?(cells[colMap.name]||'').toString().trim():'';
+    qtyc=colMap.qty!=null?cells[colMap.qty]:null;
+    typec=colMap.type!=null?(cells[colMap.type]||'').toString().toLowerCase():'';
+    wtc=colMap.weight!=null?cells[colMap.weight]:null;
+  }
+  let L=numOnly(Lc), W=numOnly(Wc), H=numOnly(Hc);
+  if(dc!=null && (L==null||W==null||H==null)){
+    const ds=splitDim(dc);
+    if(ds.length>=3){ if(L==null)L=ds[0]; if(W==null)W=ds[1]; if(H==null)H=ds[2]; }
+    else if(ds.length===2 && /cyl|圆柱|圆|drum|round|桶/.test(typec)){ if(L==null)L=ds[0]; if(W==null)W=ds[0]; if(H==null)H=ds[1]; }
+  }
+  if(headerless && (L==null||W==null||H==null)){
+    const all=cells.map(numOnly).filter(v=>v!=null&&v>0);
+    if(L==null)L=all[0]; if(W==null)W=all[1]; if(H==null)H=all[2];
+  }
+  if(L==null||W==null||H==null||L<=0||W<=0||H<=0) return null;
+  let qty=1;
+  if(qtyc!=null){ const q=parseInt(String(qtyc).replace(/[^\d.]/g,'')); if(isFinite(q)&&q>=1) qty=q; }
+  let shape='box';
+  if(/cyl|圆柱|圆桶|drum|round|桶/.test(typec)) shape='cyl';
+  let weight=0;
+  if(wtc!=null){ const raw=String(wtc); const wv=parseFloat(raw.replace(/[^\d.]/g,'')); if(isFinite(wv)&&wv>0){ weight = /吨|\bt\b|ton|tne/i.test(raw)? wv*1000 : wv; } }
+  return {name, Lr:L, Wr:W, Hr:H, qty, shape, weight};
+}
+function parsePackingRows(rows){
+  const n=rows.length;
+  const maxHead=Math.min(8,n);
+  let headRow=-1, headScore=0, colMap=null;
+  for(let r=0;r<maxHead;r++){
+    const cells=rows[r]; if(!cells||!cells.length) continue;
+    const map={}; const used=new Set();
+    cells.forEach((cell,ci)=>{
+      if(used.has(ci)) return;
+      const t=String(cell||'').trim().toLowerCase();
+      if(!t) return;
+      for(const f of ['name','qty','L','W','H','dim','type','weight']){
+        if(used.has(ci)) break;
+        if(matchHeader(t,f)){ map[f]=ci; used.add(ci); break; }
+      }
+    });
+    const score=Object.keys(map).length;
+    if(score>headScore){ headScore=score; headRow=r; colMap=map; }
+  }
+  const headerless = headScore<2;
+  const headerRow = headerless? null : rows[headRow];
+  let headerUnit=null;
+  if(!headerless){
+    ['L','W','H','dim'].forEach(f=>{ if(headerUnit==null && colMap[f]!=null){ const u=detectUnit(headerRow[colMap[f]]); if(u) headerUnit=u; } });
+  }
+  const dataRows = headerless? rows : rows.slice(headRow+1);
+  const allNums=[];
+  dataRows.forEach(cells=>{
+    if(headerless){ cells.forEach(x=>{const v=numOnly(x); if(v!=null) allNums.push(v);}); }
+    else { ['L','W','H','dim'].forEach(f=>{ if(colMap[f]!=null){ const v=numOnly(cells[colMap[f]]); if(v!=null) allNums.push(v); } }); }
+  });
+  const scale = headerUnit || guessUnit(allNums) || 1;
+  const items=[]; let skipped=0;
+  dataRows.forEach(cells=>{ const it=rowToCargo(cells, headerless?null:colMap, headerless); if(it) items.push(it); else skipped++; });
+  return { items, skipped, scale };
+}
+function runPLParser(rows){
+  if(!rows || !rows.length){ showPLMsg('文件为空或无法解析，请检查文件内容。', true); return; }
+  const res=parsePackingRows(rows);
+  if(!res.items.length){ showPLMsg('未能从文件中识别出货物尺寸（长/宽/高）。请确认含尺寸列，或导出为 CSV / Excel 后重试。', true); return; }
+  lastParsed=res;
+  hidePLMsg();
+  showPLPreview();
+}
+function unitLabel(s){ return s===0.001?'毫米 mm': s===0.01?'厘米 cm': s===0.0254?'英寸 inch': s===1?'米 m':'自动'; }
+function curScale(){ if(!lastParsed) return 1; const v=document.getElementById('plUnit').value; return v==='auto'? (lastParsed.scale||1): parseFloat(v); }
+function renderPLPreview(){
+  if(!lastParsed) return;
+  const sc=curScale();
+  const tbl=document.getElementById('plTable'); tbl.innerHTML='';
+  lastParsed.items.forEach((it,i)=>{
+    const L=(it.Lr*sc).toFixed(2), W=(it.Wr*sc).toFixed(2), H=(it.Hr*sc).toFixed(2);
+    const row=document.createElement('div'); row.className='plrow';
+    row.innerHTML='<span class="pln">'+escapeHtml(it.name||('货物 '+(i+1)))+'</span>'
+      +'<span class="pld">'+L+'×'+W+'×'+H+' m</span>'
+      +'<span class="plw">'+(it.weight?(it.weight+'kg'):'—')+'</span>'
+      +'<span class="plq">×'+(it.qty||1)+'</span>';
+    tbl.appendChild(row);
+  });
+  document.getElementById('plCount').textContent='共识别 '+lastParsed.items.length+' 种货物'
+    +(lastParsed.skipped?('，已忽略 '+lastParsed.skipped+' 行无效数据'):'')
+    +'。系统按『'+unitLabel(lastParsed.scale)+'』识别，可在上方调整单位后导入。';
+  document.getElementById('plPreview').style.display='flex';
+}
+function showPLMsg(msg, isErr){ const el=document.getElementById('plMsg'); el.style.display='block'; el.className='plmsg'+(isErr?' err':' ok'); el.textContent=msg; }
+function hidePLMsg(){ document.getElementById('plMsg').style.display='none'; }
+function decodeText(buf){
+  // BOM 优先
+  if(buf.length>=3 && buf[0]===0xEF && buf[1]===0xBB && buf[2]===0xBF) return new TextDecoder('utf-8').decode(buf);
+  const utf8=new TextDecoder('utf-8').decode(buf);
+  // 若已经是合法中文(UTF-8),直接用
+  if(/[一-鿿]/.test(utf8)) return utf8;
+  // 否则尝试 GBK/GB18030(中文 Excel 导出的 CSV 多为该编码)
+  try{
+    const gbk=new TextDecoder('gb18030').decode(buf);
+    if(/[一-鿿]/.test(gbk)) return gbk;
+  }catch(_){}
+  return utf8;
+}
+function loadSheetJS(cb){
+  if(window.XLSX){ cb(); return; }
+  const cdns=[
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'
+  ];
+  let i=0, finished=false;
+  const start=()=>{
+    if(finished) return;
+    if(i>=cdns.length){
+      showPLMsg('无法加载 Excel 解析库（需联网，且国内网络可能拦截 CDN）。建议改用 CSV/TSV/TXT：在 Excel 中「文件 → 另存为 → CSV（UTF-8 或 ANSI 均可）」后上传，该格式现已支持中文 GBK 编码，识别更稳定。', true);
+      return;
+    }
+    const url=cdns[i++];
+    const s=document.createElement('script');
+    s.onload=()=>{ if(finished) return; finished=true; cb(); };
+    s.onerror=()=>{ if(finished) return; start(); };
+    s.src=url;
+    document.head.appendChild(s);
+    setTimeout(()=>{ if(!finished) start(); }, 9000);
+  };
+  start();
+}
+function handlePLFile(file){
+  const name=(file.name||'').toLowerCase();
+  if(name.endsWith('.xlsx')||name.endsWith('.xls')){
+    loadSheetJS(()=>{
+      const fr=new FileReader();
+      fr.onload=e=>{
+        try{
+          const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          const rows=(XLSX.utils.sheet_to_json(ws,{header:1,defval:''})||[]).map(r=>r.map(c=>c==null?'':String(c)));
+          runPLParser(rows);
+        }catch(err){ showPLMsg('Excel 解析失败：'+(err&&err.message?err.message:err), true); }
+      };
+      fr.readAsArrayBuffer(file);
+    });
+    return;
+  }
+  const fr=new FileReader();
+  fr.onload=e=>{
+    try{
+      const buf=new Uint8Array(e.target.result);
+      if(buf[0]===0x25 && buf[1]===0x50 && buf[2]===0x44 && buf[3]===0x46){
+        showPLMsg('检测到 PDF 文件，暂不支持直接解析。请将装箱单另存为 CSV / Excel 后重新导入。', true);
+        return;
+      }
+      const text=decodeText(buf);
+      runPLParser(textToRows(text));
+    }catch(err){ showPLMsg('文件解析失败：'+(err&&err.message?err.message:err), true); }
+  };
+  fr.onerror=()=>{ showPLMsg('文件读取失败。', true); };
+  fr.readAsArrayBuffer(file);
+}
+document.getElementById('plPick').onclick=()=>document.getElementById('plFile').click();
+document.getElementById('plFile').addEventListener('change',e=>{ const f=e.target.files&&e.target.files[0]; if(f) handlePLFile(f); });
+document.getElementById('plUnit').addEventListener('change',()=>{ if(lastParsed) renderPLPreview(); });
+document.getElementById('plCancel').onclick=()=>{ document.getElementById('plPreview').style.display='none'; document.getElementById('plFile').value=''; lastParsed=null; hidePLMsg(); };
+document.getElementById('plImport').onclick=()=>{
+  if(!lastParsed) return;
+  const sc=curScale();
+  let n=0;
+  lastParsed.items.forEach((it)=>{
+    const L=+(it.Lr*sc).toFixed(2), W=+(it.Wr*sc).toFixed(2), H=+(it.Hr*sc).toFixed(2);
+    if(L<=0||W<=0||H<=0) return;
+    const g=addGroup(it.shape||'box', L, W, H, true, it.weight||0);
+    if(it.name) g.name=it.name.slice(0,40);
+    for(let k=1;k<(it.qty||1);k++) addInstance(g);
+    n++;
+  });
+  document.getElementById('plPreview').style.display='none';
+  document.getElementById('plFile').value='';
+  lastParsed=null; hidePLMsg();
+  render();
+  showPLMsg('已导入 '+n+' 种货物，可在左侧清单查看并继续调整。', false);
+};
+
+// ---------- 装柜成本最优方案（运费最低柜型组合） ----------
+const CONTAINER_ORDER=['20GP','40GP','40HC','45HC','20RF','40RF','40RH','45RH'];
+let FREIGHT={'20GP':1500,'40GP':2500,'40HC':2700,'45HC':3000,'20RF':2000,'40RF':3200,'40RH':3400,'45RH':3600}; // 运输成本（¥），可编辑
+function buildFreightUI(){
+  const box=document.getElementById('freightRows'); box.innerHTML='';
+  CONTAINER_ORDER.forEach(k=>{
+    const c=CONTAINERS[k];
+    const row=document.createElement('div'); row.className='co-row';
+    row.innerHTML='<span class="nm">'+c.name+'<small>'+k+' · '+c.L+'×'+c.W+'×'+c.H+' m · 载重 '+c.payload+' t</small></span>'
+      +'<input type="number" min="0" step="50" value="'+FREIGHT[k]+'" data-k="'+k+'">';
+    box.appendChild(row);
+  });
+  box.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input',()=>{ const k=inp.getAttribute('data-k'); const v=parseFloat(inp.value); FREIGHT[k]=isFinite(v)&&v>=0?v:0; });
+  });
+}
+function fmtMoney(n){ return '¥'+Math.round(n).toLocaleString('zh-CN'); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function aggregateCargo(){
+  const byGroup={};
+  items.forEach(it=>{
+    const g=groups.find(x=>x.id===it.groupId)||{name:'货物',oL:it.oL,oW:it.oW,oH:it.oH,shape:it.shape};
+    const key=it.groupId||('x'+it.id);
+    if(!byGroup[key]) byGroup[key]={name:g.name||'货物', shape:it.shape, L:g.oL, W:g.oW, H:g.oH, qty:0, vol:0, weight:0};
+    byGroup[key].qty++;
+    byGroup[key].weight += (it.weight||0); // 单件重量(kg) × 件数
+  });
+  const lines=Object.values(byGroup).map(g=>{ g.vol=g.L*g.W*g.H*g.qty; return g; }).sort((a,b)=>b.vol-a.vol);
+  let totalVol=0, totalCount=0, maxDims=[0,0,0], totalWeight=0;
+  lines.forEach(g=>{ totalVol+=g.vol; totalCount+=g.qty; totalWeight+=(g.weight||0);
+    const sd=[g.L,g.W,g.H].sort((a,b)=>a-b);
+    maxDims=[Math.max(maxDims[0],sd[0]),Math.max(maxDims[1],sd[1]),Math.max(maxDims[2],sd[2])];
+  });
+  return {lines, totalVol, totalCount, maxDims, totalWeight}; // totalWeight 单位 kg
+}
+function fitsContainer(sortedDims, c){
+  const cd=[c.L,c.W,c.H].sort((a,b)=>a-b);
+  return sortedDims[0]<=cd[0]+1e-6 && sortedDims[1]<=cd[1]+1e-9 && sortedDims[2]<=cd[2]+1e-9;
+}
+function computeCostPlan(){
+  if(viewBackup) exitPreview();
+  const agg=aggregateCargo();
+  if(agg.totalCount===0){ showCostMsg('请先添加货物，或先从装箱单导入。', true); return; }
+  const lf=parseFloat(document.getElementById('loadFactor').value);
+  const loadFactor=(isFinite(lf)&&lf>0.3&&lf<0.99)? lf : 0.82;
+  const cand=CONTAINER_ORDER.filter(k=>fitsContainer(agg.maxDims, CONTAINERS[k])).sort((a,b)=>CONTAINERS[b].vol-CONTAINERS[a].vol);
+  if(!cand.length){
+    showCostMsg('最大单件尺寸（'+agg.maxDims.map(x=>x.toFixed(2)).join('×')+' m）超过所有柜型内尺寸，无法装入。请拆分大件或改选更大柜型。', true);
+    return;
+  }
+  const V=agg.totalVol, totalWtT=agg.totalWeight/1000; // 总重(吨)
+  const maxPay=Math.max(...cand.map(k=>CONTAINERS[k].payload));
+  // 单件重量超过所有候选柜型载重 → 物理上不可能（除非拆分）
+  if(agg.lines.some(g=> (g.weight||0)/Math.max(1,g.qty) > maxPay*1000 + 1e-6)){
+    showCostMsg('存在单件重量超过所有柜型最大载重（'+maxPay+' t），无法装入单柜。请拆分大件或改选更大载重柜型。', true);
+    return;
+  }
+  // 二维背包 DP：同时约束「有效容积」与「载重」，求运输成本最低组合
+  // 不夹紧索引（避免平底区致回溯歧义/崩溃）；网格按「覆盖体积所需最坏载重」并保底到单柜尺寸，确保最优组合在网格内、前驱链有效
+  const needCapV=V/loadFactor, needCapW=totalWtT; // 所需有效容积(m³) / 所需载重(t)
+  const stepV=0.05, stepW=0.5;
+  const cost=cand.map(k=>(FREIGHT[k]||0));
+  const addV=cand.map(k=>Math.round(CONTAINERS[k].vol*loadFactor/stepV));
+  const addW=cand.map(k=>Math.round(CONTAINERS[k].payload/stepW));
+  const minVolPerW=Math.min(...cand.map(k=>CONTAINERS[k].vol*loadFactor/(CONTAINERS[k].payload||1))); // m³/t 下限
+  const needWorstT=needCapV/minVolPerW + 5; // 覆盖体积所需的最坏载重(t)
+  const NV_CAP=20000, NW_CAP=1000;
+  const Nv=Math.min(Math.max(Math.ceil((needCapV*1.5+5)/stepV), Math.max(...addV)+10), NV_CAP);
+  const Nw=Math.min(Math.max(Math.ceil((Math.max(needCapW,needWorstT)+5)/stepW), Math.max(...addW)+10), NW_CAP);
+  const INF=Infinity;
+  let dp, back, bestCv=-1, bestCw=-1, bestCost=INF;
+  // 二维背包 DP：同时约束「有效容积」与「载重」，求运输成本最低组合
+  if(Nv<=NV_CAP && Nw<=NW_CAP){
+    dp=new Array(Nv+1); back=new Array(Nv+1);
+    for(let i=0;i<=Nv;i++){ dp[i]=new Array(Nw+1).fill(INF); back[i]=new Array(Nw+1).fill(null); }
+    dp[0][0]=0;
+    for(let iv=0; iv<=Nv; iv++){
+      const row=dp[iv];
+      for(let iw=0; iw<=Nw; iw++){
+        if(row[iw]===INF) continue;
+        for(let k=0;k<cand.length;k++){
+          const nv=iv+addV[k], nw=iw+addW[k];
+          if(nv>Nv || nw>Nw) continue;
+          const nc=row[iw]+cost[k];
+          if(nc < dp[nv][nw]){ dp[nv][nw]=nc; back[nv][nw]={k,iv,iw}; }
+        }
+      }
+    }
+    for(let iv=0; iv<=Nv; iv++){
+      if(iv*stepV < needCapV-1e-6) continue;
+      for(let iw=0; iw<=Nw; iw++){
+        if(iw*stepW < needCapW-1e-6) continue;
+        if(dp[iv][iw] < bestCost){ bestCost=dp[iv][iw]; bestCv=iv; bestCw=iw; }
+      }
+    }
+  }
+  // 若 DP 因网格 cap 未找到解，退到按「单位有效容积成本」贪心，确保大货量仍有方案
+  if(bestCv<0){
+    const eff=cand.map(k=>CONTAINERS[k].vol*loadFactor);
+    const order=cand.map((k,i)=>i).sort((a,b)=>(cost[a]/eff[a])-(cost[b]/eff[b]));
+    let cv=0, cw=0, tc=0; const gcounts=new Array(cand.length).fill(0);
+    while((cv*stepV<needCapV || cw*stepW<needCapW) && gcounts.reduce((s,n)=>s+n,0)<100){
+      let added=false;
+      for(const idx of order){
+        if(cv+addV[idx]<=NV_CAP && cw+addW[idx]<=NW_CAP){
+          cv+=addV[idx]; cw+=addW[idx]; tc+=cost[idx]; gcounts[idx]++; added=true; break;
+        }
+      }
+      if(!added) break;
+    }
+    if(cv*stepV>=needCapV && cw*stepW>=needCapW){
+      const counts=new Array(cand.length).fill(0);
+      cand.forEach((k,idx)=>{ counts[idx]=gcounts[idx]; });
+      runPlanLines(counts);
+      return;
+    }
+    showCostMsg('在当前柜型与运输成本下，无法求得同时满足体积与载重的方案，请调整柜型或预计装载率。', true); return;
+  }
+  const counts=new Array(cand.length).fill(0);
+  let cv=bestCv, cw=bestCw, bguard=0;
+  while((cv>0||cw>0) && bguard++<500){
+    const b=back[cv][cw]; if(!b) break;
+    counts[b.k]++; cv=b.iv; cw=b.iw;
+  }
+  runPlanLines(counts);
+
+  // 由 counts 生成方案行，逐柜实装（受尺寸+载重双重约束），装不完自动增补更大柜
+  function runPlanLines(counts){
+    const planLines=[];
+    cand.forEach((k,idx)=>{ if(counts[idx]>0) planLines.push({k, name:CONTAINERS[k].name, count:counts[idx], vol:CONTAINERS[k].vol, sub:cost[idx]*counts[idx]}); });
+    const allowRot=document.getElementById('rotChk').checked;
+    let pool=items.map(it=>({
+      oL:it.oL, oW:it.oW, oH:it.oH, shape:it.shape, stack:it.stack,
+      color:it.color, groupId:it.groupId,
+      name:(groups.find(g=>g.id===it.groupId)||{}).name||'货物',
+      parts: it.parts? cloneParts(it.parts): null, weight:it.weight||0
+    }));
+    const augKeys=cand.slice().sort((a,b)=>(FREIGHT[a]||0)-(FREIGHT[b]||0)); // 增补时优先用最便宜且能装下的柜
+    const planContainers=[], planByKey={};
+    planLines.forEach(p=>{ for(let n=0;n<p.count;n++){ const r=packIntoContainer(p.k, pool, allowRot); planContainers.push(r); pool=r.remaining; planByKey[p.k]=(planByKey[p.k]||0)+1; } });
+    let guard=0; const MAXCONT=40;
+    while(pool.length && planContainers.length<MAXCONT && guard++<MAXCONT){
+      let placedAny=false;
+      for(const k of augKeys){ const r=packIntoContainer(k, pool, allowRot); if(r.count>0){ planContainers.push(r); pool=r.remaining; planByKey[k]=(planByKey[k]||0)+1; placedAny=true; break; } }
+      if(!placedAny) break;
+    }
+    let overflowMsg='';
+    if(pool.length) overflowMsg='仍有 '+pool.length+' 件货物未能装入（受单件尺寸 / 载重或柜内空隙限制）。建议提高「预计装载率」、增加柜量或更换柜型后重新生成。';
+    // 按实际增补后的柜数重建方案行
+    const actualLines=[];
+    Object.keys(planByKey).forEach(k=>{ if(planByKey[k]>0) actualLines.push({k, name:CONTAINERS[k].name, count:planByKey[k], vol:CONTAINERS[k].vol, sub:(FREIGHT[k]||0)*planByKey[k]}); });
+    actualLines.sort((a,b)=>CONTAINER_ORDER.indexOf(b.k)-CONTAINER_ORDER.indexOf(a.k));
+    const totalCost=actualLines.reduce((s,p)=>s+p.sub,0);
+    const totalEffCap=actualLines.reduce((s,p)=>s+CONTAINERS[p.k].vol*loadFactor*p.count,0);
+    const util=totalEffCap>0? (V/totalEffCap*100):0;
+    renderCostResult(agg, actualLines, totalCost, util, loadFactor, cand, cost, planContainers, overflowMsg);
+  }
+}
+// 单柜启发式装箱（含载重约束）：返回该柜已装列表与剩余未装货物（超重/装不下顺延到下一柜）
+function packIntoContainer(specKey, pool, allowRot){
+  const c=CONTAINERS[specKey];
+  const payKg=c.payload*1000;
+  const work=pool.slice().sort((a,b)=>(b.oL*b.oW*b.oH)-(a.oL*a.oW*a.oH));
+  const placed=[], placedSet=new Set(); let usedWt=0;
+  for(const w of work){
+    if(placedSet.has(w)) continue;
+    const ors = w.shape==='cyl'? orientCyl(w.oL,w.oW,w.oH) : orientBox(w.oL,w.oW,w.oH, allowRot);
+    const cand=candidatePoints(placed,c);
+    let best=null, bestScore=Infinity;
+    for(const pt of cand){
+      for(const o of ors){
+        if(pt[0]+o.L>c.L+1e-6 || pt[2]+o.W>c.W+1e-6 || pt[1]+o.H>c.H+1e-6) continue;
+        const box={x:pt[0],y:pt[1],z:pt[2],L:o.L,W:o.W,H:o.H};
+        if(placed.some(p=>overlap(box,p))) continue;
+        if(pt[1]>0){
+          if(!w.stack) continue;
+          const supported=placed.some(p=> p.x<box.x+box.L && box.x<p.x+p.L && p.z<box.z+box.W && box.z<p.z+p.W && Math.abs(p.y+p.H-pt[1])<1e-6);
+          if(!supported) continue;
+        }
+        const score=pt[1]*100000 + (pt[0]+pt[2])*200 - Math.min(o.L,o.W)*5;
+        if(score<bestScore){ bestScore=score; best={x:pt[0],y:pt[1],z:pt[2],L:o.L,W:o.W,H:o.H}; }
+      }
+    }
+    const itW=(w.weight||0);
+    if(best && usedWt + itW <= payKg + 1e-6){
+      placed.push({x:best.x,y:best.y,z:best.z,L:best.L,W:best.W,H:best.H, shape:w.shape, color:w.color, groupId:w.groupId, name:w.name, parts:w.parts||null, weight:itW});
+      placedSet.add(w); usedWt += itW;
+    }
+  }
+  const remaining=pool.filter(p=>!placedSet.has(p));
+  const vol=placed.reduce((s,i)=>s+i.L*i.W*i.H,0);
+  return { specKey, placed, util:vol/c.vol*100, remaining, count:placed.length, usedWt };
+}
+// 把某柜的装柜方案画到一个独立小画布（复用主渲染管线）
+function renderMini(canvasEl, specKey, conItems){
+  const g=canvasEl.getContext('2d');
+  const _ctx=ctx,_cv=cv,_cur=curSpec,_zm=zoom,_yw=yaw,_pt=pitch,_sl=selId,_dr=doorAngle,_lt=loadT,_see=seeThrough,_ar=autoRotate;
+  try{
+    canvasEl.width=canvasEl.clientWidth*devicePixelRatio; canvasEl.height=canvasEl.clientHeight*devicePixelRatio;
+    g.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+    ctx=g; cv=canvasEl; curSpec=specKey; zoom=1; yaw=0.6; pitch=-0.5; selId=null; doorAngle=0; loadT=1; seeThrough=false; autoRotate=false;
+    fitView(canvasEl);
+    g.clearRect(0,0,canvasEl.width,canvasEl.height);
+    drawContainer();
+    const drawn=conItems.slice();
+    _faces=[];
+    drawn.forEach(it=>{ if(it.shape==='composite') drawComposite(it); else if(it.shape==='cyl') drawCyl(it); else drawBox(it); });
+    flushFaces();
+    drawn.forEach(it=>drawDecor(it));
+    drawDoor3D();
+  } finally {
+    ctx=_ctx; cv=_cv; curSpec=_cur; zoom=_zm; yaw=_yw; pitch=_pt; selId=_sl; doorAngle=_dr; loadT=_lt; seeThrough=_see; autoRotate=_ar;
+  }
+}
+// 在 3D 主视图中查看某柜（带快照，可一键返回货物全景，不破坏原货物）
+let viewBackup=null, viewBackupSpec=null;
+function viewContainer(specKey, conItems){
+  if(!viewBackup){ viewBackup=items.slice(); viewBackupSpec=curSpec; }
+  curSpec=specKey;
+  items=conItems.map(it=>({ id:uid++, groupId:it.groupId, shape:it.shape, oL:it.L, oW:it.W, oH:it.H, L:it.L, W:it.W, H:it.H, x:it.x, y:it.y, z:it.z, stack:true, color:it.color, overflow:false, parts: it.parts? cloneParts(it.parts): null }));
+  planned=true; loadSeq=feasibleLoadOrder(); render();
+  const b=document.getElementById('exitPreview'); if(b) b.style.display='flex';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function exitPreview(){
+  if(viewBackup){ items=viewBackup; curSpec=viewBackupSpec; viewBackup=null; viewBackupSpec=null; planned=false; loadSeq=[]; render(); }
+  const b=document.getElementById('exitPreview'); if(b) b.style.display='none';
+}
+function showCostMsg(msg, isErr){ const el=document.getElementById('costMsg'); el.style.display='block'; el.className='plmsg'+(isErr?' err':' ok'); el.textContent=msg; document.getElementById('costResult').style.display='none'; }
+function renderCostResult(agg, planLines, totalCost, util, loadFactor, cand, cost, planContainers, overflowMsg){
+  document.getElementById('costMsg').style.display='none';
+  const sum=document.getElementById('costSum');
+  const wtTxt = agg.totalWeight>=1000? (agg.totalWeight/1000).toFixed(2)+' t' : Math.round(agg.totalWeight)+' kg';
+  sum.innerHTML='货物共 <b>'+agg.totalCount+'</b> 件，总体积 <b>'+agg.totalVol.toFixed(2)+' m³</b>，总重量 <b>'+wtTxt+'</b>；'
+    +'按预计装载率 <b>'+(loadFactor*100).toFixed(0)+'%</b> 计，需集装箱有效容积 ≥ <b>'+(agg.totalVol/loadFactor).toFixed(2)+' m³</b>（并已计入各柜载重上限）。';
+  const plan=document.getElementById('costPlan'); plan.innerHTML='';
+  planLines.forEach(p=>{
+    const ci=cand.indexOf(p.k);
+    const row=document.createElement('div'); row.className='co-line';
+    row.innerHTML='<div><div class="ct">'+p.name+' × '+p.count+'</div><div class="csub">'+p.k+' · 运输成本 '+fmtMoney(cost[ci])+'/柜</div></div>'
+      +'<div class="cpr">'+fmtMoney(p.sub)+'</div>';
+    plan.appendChild(row);
+  });
+  const tot=document.createElement('div'); tot.className='co-total';
+  tot.innerHTML='<span class="t1">最优方案 · 合计运输成本</span><span class="t2">'+fmtMoney(totalCost)+'</span>';
+  plan.appendChild(tot);
+  document.getElementById('costNote').textContent='预计装载率 '+util.toFixed(0)+'%（已装体积 / 集装箱有效容积）。方案已自动排除装不下最大单件的柜型，并用「体积+载重」二维背包求解运输成本最低且可实际发运的组合；运输成本取自上方可编辑表格，改后点「生成方案」即可重算。'+(overflowMsg? ' ⚠ '+overflowMsg : '');
+  // 逐柜明细：每柜的货物清单 + 3D 装柜缩略图 + 一键在主视图查看
+  const det=document.getElementById('costDetail'); det.innerHTML='';
+  planContainers.forEach((con,idx)=>{
+    const c=CONTAINERS[con.specKey];
+    const byG={};
+    con.placed.forEach(it=>{ const k=it.groupId||('x'+idx); if(!byG[k]) byG[k]={name:it.name,shape:it.shape,L:it.L,W:it.W,H:it.H,qty:0}; byG[k].qty++; });
+    const rows=Object.values(byG).sort((a,b)=>b.qty-a.qty);
+    let mani='';
+    rows.forEach(r=>{ mani+='<div class="mr"><span class="nm2">'+esc(r.name)+'</span><span class="dim">'+r.L.toFixed(2)+'×'+r.W.toFixed(2)+'×'+r.H.toFixed(2)+'</span><span>×'+r.qty+'</span><span>'+(r.L*r.W*r.H*r.qty).toFixed(1)+' m³</span></div>'; });
+    const wtT=con.usedWt/1000;
+    const overWt = wtT > c.payload + 1e-6;
+    const card=document.createElement('div'); card.className='co-det'+(idx===0?' open':'')+(overWt?' over':'');
+    card.innerHTML='<div class="co-det-head"><div class="t">柜 '+(idx+1)+'/'+planContainers.length+' · '+c.name+'<small>'+con.specKey+'</small></div>'
+      +'<div class="m">装载 <b>'+con.count+'</b> 件 · 利用率 <b>'+con.util.toFixed(0)+'%</b> · 载重 <b style="color:'+(overWt?'var(--red)':'inherit')+'">'+wtT.toFixed(2)+'/'+c.payload+' t</b></div></div>'
+      +'<div class="co-det-body"><canvas class="co-mini" id="mini'+idx+'"></canvas>'
+      +'<div class="co-manifest"><div class="mh"><span>货物</span><span>尺寸 m</span><span>件数</span><span>体积</span></div>'+mani+'</div>'
+      +'<div class="co-det-ft"><span class="muted" style="font-size:12px">点表头展开/收起；「3D 查看」载入主视图（可旋转 / 播放 / 录视频）</span>'
+      +'<button class="co-view" data-i="'+idx+'">在 3D 视图查看</button></div></div>';
+    det.appendChild(card);
+    card.querySelector('.co-det-head').onclick=()=>{ card.classList.toggle('open'); const cvs=card.querySelector('.co-mini'); if(cvs && !cvs.dataset.done){ renderMini(cvs, con.specKey, con.placed); cvs.dataset.done='1'; } };
+    card.querySelector('.co-view').onclick=(e)=>{ e.stopPropagation(); viewContainer(con.specKey, con.placed); };
+  });
+  planContainers.forEach((con,idx)=>{ const cvs=document.getElementById('mini'+idx); if(cvs) renderMini(cvs, con.specKey, con.placed); });
+  if(overflowMsg){ const w=document.createElement('div'); w.className='co-warn'; w.textContent='⚠ '+overflowMsg; det.appendChild(w); }
+  document.getElementById('costResult').style.display='flex';
+  const costCard=document.getElementById('costCard'); if(costCard && costCard.scrollIntoView) costCard.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+document.getElementById('costRun').onclick=computeCostPlan;
+document.getElementById('loadFactor').addEventListener('change',()=>{ if(document.getElementById('costResult').style.display!=='none') computeCostPlan(); });
+buildFreightUI();
 
 // ---------- optimal packing engine ----------
 function orientBox(oL,oW,oH, allowRot){
@@ -890,16 +1788,20 @@ function candidatePoints(placed, c){
   const g=0.5;
   for(let x=0;x<=c.L+1e-6;x+=g) for(let z=0;z<=c.W+1e-6;z+=g) pts.push([x,0,z]);
   for(const p of placed){
-    pts.push([p.x,p.y+p.H,p.z]);
-    pts.push([p.x+p.L,p.y+p.H,p.z]);
-    pts.push([p.x,p.y+p.H,p.z+p.W]);
-    pts.push([p.x+p.L,p.y+p.H,p.z+p.W]);
-    pts.push([p.x+p.L,0,p.z]);
-    pts.push([p.x,0,p.z+p.W]);
+    const cx=p.x+p.L/2, cz=p.z+p.W/2, top=p.y+p.H;
+    // 顶面候选点：四角 + 顶面中心 + 四条边中点，使较小货物可居中叠放、贴合大件表面（避免只能放四角的空隙浪费）
+    pts.push([p.x,top,p.z]); pts.push([p.x+p.L,top,p.z]);
+    pts.push([p.x,top,p.z+p.W]); pts.push([p.x+p.L,top,p.z+p.W]);
+    pts.push([cx,top,p.z]); pts.push([p.x+p.L,top,cz]);
+    pts.push([cx,top,p.z+p.W]); pts.push([p.x,top,cz]);
+    pts.push([cx,top,cz]);
+    // 已放箱体的侧面贴靠点（便于贴墙/贴件排布）
+    pts.push([p.x+p.L,0,p.z]); pts.push([p.x,0,p.z+p.W]);
   }
   return pts;
 }
 function optimalPlan(){
+  if(viewBackup) exitPreview();
   const c=CONTAINERS[curSpec];
   const allowRot=document.getElementById('rotChk').checked;
   // work units: one per instance, ordered by volume desc (best-fit decreasing)
@@ -938,17 +1840,89 @@ function optimalPlan(){
   }
   planned=true;
   const total=work.length;
-  const util = total? Math.min(100, items.reduce((s,i)=>s+i.L*i.W*i.H,0)/c.vol*100):0;
+  const util = total? Math.min(100, placed.reduce((s,p)=>s+p.L*p.W*p.H,0)/c.vol*100):0;
   const hasComp = work.some(w=>w.shape==='composite');
   const method = (allowRot
     ? `已运行自动最优排布：3D 启发式装箱（最大先放 + 旋转择优 + 极限点堆叠），共放置 ${placedCount}/${total} 件，利用率 ${util.toFixed(1)}%。`
     : `已运行自动最优排布：3D 启发式装箱（最大先放 + 极限点堆叠，不旋转），共放置 ${placedCount}/${total} 件，利用率 ${util.toFixed(1)}%。`)
-    + (hasComp? ' 注：组合件（异形）按各子形状外接长方体（包络）整体排布，实际空隙通常大于该利用率。':'');
+    + (hasComp? ' 注：组合件（异形）按各子形状外接长方体（包络）整体排布，实际空隙通常大于该利用率。':'')
+    + ' 装柜顺序已按物理可达性自动排定：从柜门对侧逐列、由下往上装，且支撑件先于其上层装入——动画与视频均按此真实顺序演示，确保每件都能实际装入。'
+    + (overCount>0 ? ` ⚠ 当前 ${c.name} 装不下全部 ${total} 件（${overCount} 件超限）。3 秒后将自动为您生成多柜成本最优方案，或现在点右侧「装柜成本最优方案 → 生成方案」手动触发。` : '');
   document.getElementById('methodTxt').textContent=method;
   render();
+  if(overCount>0){
+    setTimeout(()=>{ if(items.some(i=>i.overflow)) computeCostPlan(); }, 2500);
+  }
 }
 
 window.addEventListener('resize',render);
+
+// ---------- 工程文件：自动保存 / 导入 / 导出 ----------
+const PROJ_KEY='containerSim_v1';
+function saveState(){
+  try{
+    const st={ v:1, groups, items, curSpec, FREIGHT,
+      loadFactor:(+document.getElementById('loadFactor').value||0.82), dimUnit,
+      rotChk:document.getElementById('rotChk').checked, orthoVisible };
+    localStorage.setItem(PROJ_KEY, JSON.stringify(st));
+  }catch(_){}
+}
+function applyOrthoState(){
+  document.getElementById('orthoWrap').classList.toggle('collapsed',!orthoVisible);
+  document.getElementById('orthoTab').textContent=orthoVisible?'收起':'三视图';
+}
+function _fixUid(){ let mx=0; groups.concat(items).forEach(o=>{ const m=String(o&&o.id).match(/(\d+)/); if(m) mx=Math.max(mx,+m[1]); }); uid=mx+1; }
+function loadState(){
+  let raw; try{ raw=localStorage.getItem(PROJ_KEY); }catch(_){ return false; }
+  if(!raw) return false;
+  let st; try{ st=JSON.parse(raw); }catch(_){ return false; }
+  if(!st || !Array.isArray(st.groups) || !Array.isArray(st.items)) return false;
+  groups=st.groups; items=st.items;
+  if(st.curSpec && CONTAINERS[st.curSpec]) curSpec=st.curSpec;
+  if(st.FREIGHT) FREIGHT=st.FREIGHT;
+  if(st.dimUnit){ dimUnit=st.dimUnit; const du=document.getElementById('dimUnit'); if(du) du.value=dimUnit; }
+  if(st.loadFactor) document.getElementById('loadFactor').value=st.loadFactor;
+  if(typeof st.rotChk==='boolean') document.getElementById('rotChk').checked=st.rotChk;
+  if(typeof st.orthoVisible==='boolean') orthoVisible=st.orthoVisible;
+  applyOrthoState();
+  _fixUid(); buildFreightUI(); return true;
+}
+function exportProject(){
+  const st={ v:1, groups, items, curSpec, FREIGHT,
+    loadFactor:(+document.getElementById('loadFactor').value||0.82), dimUnit,
+    rotChk:document.getElementById('rotChk').checked, orthoVisible };
+  const blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='装柜工程-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+document.getElementById('projExport').onclick=exportProject;
+document.getElementById('projImportBtn').onclick=()=>document.getElementById('projFile').click();
+document.getElementById('projFile').addEventListener('change',e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const fr=new FileReader();
+  fr.onload=ev=>{ try{
+    const st=JSON.parse(ev.target.result);
+    if(!st || !Array.isArray(st.groups) || !Array.isArray(st.items)){ alert('工程文件格式不正确。'); return; }
+    groups=st.groups; items=st.items; selId=null; planned=false;
+    if(st.curSpec && CONTAINERS[st.curSpec]) curSpec=st.curSpec;
+    if(st.FREIGHT) FREIGHT=st.FREIGHT;
+    if(st.dimUnit){ dimUnit=st.dimUnit; document.getElementById('dimUnit').value=dimUnit; }
+    if(st.loadFactor) document.getElementById('loadFactor').value=st.loadFactor;
+    if(typeof st.rotChk==='boolean') document.getElementById('rotChk').checked=st.rotChk;
+    _fixUid(); buildFreightUI(); saveState(); render();
+  }catch(err){ alert('导入失败：'+(err&&err.message||err)); } };
+  fr.readAsText(f); e.target.value='';
+});
+document.getElementById('projReset').onclick=()=>{
+  if(!confirm('确定清空当前所有货物与方案？此操作不可撤销。')) return;
+  groups=[]; items=[]; selId=null; planned=false;
+  try{ localStorage.removeItem(PROJ_KEY); }catch(_){}
+  seedExample(); render();
+};
+// 启动：有存档则恢复，否则放入示例
+if(!loadState()){ seedExample(); applyOrthoState(); }
+saveState();
 render();
 </script>
 </body>
